@@ -20,7 +20,7 @@ public class TicketsController : ControllerBase
         _servicioTickets = servicioTickets;
     }
 
-    // Crear ticket
+   
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] CrearTicketDto dto)
     {
@@ -32,7 +32,7 @@ public class TicketsController : ControllerBase
         return Ok(new { ticketId = id });
     }
 
-    // Ver mis tickets
+    
     [HttpGet("mis-tickets")]
     public async Task<IActionResult> ObtenerMisTickets()
     {
@@ -44,7 +44,7 @@ public class TicketsController : ControllerBase
         return Ok(tickets);
     }
 
-    // Cambiar estado (solo Admin)
+    
     [Authorize(Roles = "Administrador")]
     [HttpPatch("{id}/estado")]
     public async Task<IActionResult> CambiarEstado(
@@ -69,7 +69,11 @@ public class TicketsController : ControllerBase
         var resultado = await _servicioTickets
             .ObtenerFiltradosAsync(filtro);
 
-        return Ok(resultado);
+        return Ok(new
+        {
+            success = true,
+            data = resultado
+        });
     }
 
     private Guid ObtenerUsuarioIdDelToken()
@@ -84,7 +88,7 @@ public class TicketsController : ControllerBase
 
     [Authorize(Roles = "Administrador")]
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteTicket(Guid id)
+    public async Task<IActionResult> Eliminar(Guid id)
     {
         await _servicioTickets.EliminarAsync(id);
         return NoContent();

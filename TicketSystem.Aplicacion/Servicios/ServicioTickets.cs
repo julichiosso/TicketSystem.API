@@ -131,7 +131,7 @@ namespace TicketSystem.Aplicacion.Servicios
 
             ticket.IsDeleted = true;
 
-            await _repositorioTickets.ActualizarAsync(ticket);
+            await _repositorioTickets.GuardarCambiosAsync();
         }
 
     }

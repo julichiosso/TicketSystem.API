@@ -17,9 +17,8 @@ public class UsuariosController : ControllerBase
     }
 
 
-  
 
-    // GET: api/Usuarios
+
     [HttpGet]
     public async Task<IActionResult> GetUsuarios()
     {
@@ -32,11 +31,15 @@ public class UsuariosController : ControllerBase
             u.Email,
             u.Rol
         });
-        throw new Exception("Error de prueba");
-        return Ok(resultado);
+
+        return Ok(new
+        {
+            success = true,
+            data = resultado
+        });
     }
 
-    // GET: api/Usuarios/{id}
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUsuario(Guid id)
     {
@@ -53,10 +56,14 @@ public class UsuariosController : ControllerBase
             usuario.Rol
         };
 
-        return Ok(resultado);
+        return Ok(new
+        {
+            success = true,
+            data = resultado
+        });
     }
 
-    // DELETE: api/Usuarios/{id}
+    
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUsuario(Guid id)
     {

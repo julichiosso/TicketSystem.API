@@ -12,36 +12,47 @@ public static class DataSeeder
         TicketSystemDbContext context,
         IPasswordHasher<Usuario> passwordHasher)
     {
+        
         if (await context.Usuarios.AnyAsync())
             return;
 
+        
         var admin = new Usuario
         {
             Id = Guid.NewGuid(),
-            Nombre = "Admin Demo",
-            Email = "admin@demo.com",
+            Nombre = "Administrador",
+            Email = "admin@ticketsystem.com",
             Rol = RolUsuario.Administrador
         };
-        admin.PasswordHash = passwordHasher.HashPassword(admin, "Admin123!");
 
+        admin.PasswordHash =
+            passwordHasher.HashPassword(admin, "Admin123");
+
+        
         var operador = new Usuario
         {
             Id = Guid.NewGuid(),
             Nombre = "Operador Demo",
-            Email = "operador@demo.com",
+            Email = "operador@ticketsystem.com",
             Rol = RolUsuario.Operador
         };
-        operador.PasswordHash = passwordHasher.HashPassword(operador, "Operador123!");
 
+        operador.PasswordHash =
+            passwordHasher.HashPassword(operador, "Operador123");
+
+        
         var usuario = new Usuario
         {
             Id = Guid.NewGuid(),
             Nombre = "Usuario Demo",
-            Email = "usuario@demo.com",
+            Email = "usuario@ticketsystem.com",
             Rol = RolUsuario.Usuario
         };
-        usuario.PasswordHash = passwordHasher.HashPassword(usuario, "Usuario123!");
 
+        usuario.PasswordHash =
+            passwordHasher.HashPassword(usuario, "Usuario123");
+
+        
         await context.Usuarios.AddRangeAsync(admin, operador, usuario);
         await context.SaveChangesAsync();
     }

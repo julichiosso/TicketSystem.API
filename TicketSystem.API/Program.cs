@@ -17,9 +17,7 @@ using TicketSystem.Infraestructura.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --------------------
-// Controllers + JSON + FluentValidation
-// --------------------
+
 builder.Services
     .AddControllers()
     .AddJsonOptions(options =>
@@ -31,30 +29,22 @@ builder.Services
 
 builder.Services.AddFluentValidationAutoValidation();
 
-// --------------------
-// DbContext
-// --------------------
+
 builder.Services.AddDbContext<TicketSystemDbContext>(options =>
     options.UseSqlite(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// --------------------
-// Repositorios
-// --------------------
+
 builder.Services.AddScoped<IRepositorioTickets, RepositorioTickets>();
 builder.Services.AddScoped<IRepositorioUsuarios, RepositorioUsuarios>();
 
-// --------------------
-// Servicios
-// --------------------
+
 builder.Services.AddScoped<IServicioTickets, ServicioTickets>();
 builder.Services.AddScoped<IServicioUsuarios, ServicioUsuarios>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 
-// --------------------
-// JWT Configuration
-// --------------------
+
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
@@ -82,9 +72,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-// --------------------
-// Swagger + JWT Support
-// --------------------
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -114,19 +102,13 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// --------------------
-// Build
-// --------------------
+
 var app = builder.Build();
 
-// --------------------
-// Middleware global de errores
-// --------------------
+
 app.UseMiddleware<ExceptionMiddleware>();
 
-// --------------------
-// Swagger (solo en desarrollo)
-// --------------------
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -135,19 +117,20 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 🔐 IMPORTANTE: primero Authentication, después Authorization
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// --------------------
-// Seed automático
-// --------------------
+
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<TicketSystemDbContext>();
     var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<Usuario>>();
+
+  
+    await context.Database.EnsureCreatedAsync();
 
     await DataSeeder.SeedAsync(context, passwordHasher);
 }

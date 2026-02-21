@@ -45,7 +45,7 @@ ObtenerFiltradosAsync(FiltroTicketsDto filtro)
     {
         var query = _context.Tickets.AsQueryable();
 
-        // FILTROS
+        
         if (filtro.Estado.HasValue)
             query = query.Where(t => t.Estado == filtro.Estado.Value);
 
@@ -55,10 +55,10 @@ ObtenerFiltradosAsync(FiltroTicketsDto filtro)
         if (!string.IsNullOrEmpty(filtro.Titulo))
             query = query.Where(t => t.Titulo.Contains(filtro.Titulo));
 
-        // TOTAL antes de paginar
+       
         var total = await query.CountAsync();
 
-        // ORDENAMIENTO DINÁMICO
+        
         query = filtro.SortBy?.ToLower() switch
         {
             "titulo" => filtro.Descending

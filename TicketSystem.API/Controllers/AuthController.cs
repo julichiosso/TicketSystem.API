@@ -102,4 +102,28 @@ public class AuthController : ControllerBase
             Rol = rol
         });
     }
+
+    [Authorize(Roles = "Administrador")]
+    [HttpPost("register-admin")]
+    public async Task<IActionResult> RegisterAdmin([FromBody] RegisterRequest request)
+    {
+        var existe = await _repositorioUsuarios.ObtenerPorEmailAsync(request.Email);
+        if (existe != null)
+            throw new ArgumentException("El usuario ya existe");
+
+        var usuario = new Usuario
+        {
+            Id = Guid.NewGuid(),
+            Nombre = request.Nombre,
+            Email = request.Email,
+            Rol = RolUsuario.Administrador
+        };
+
+        usuario.PasswordHash =
+            _passwordHasher.HashPassword(usuario, request.Password);
+
+        await _repositorioUsuarios.AgregarAsync(usuario);
+
+        return Ok(new { message = "Administrador creado correctamente" });
+    }
 }
