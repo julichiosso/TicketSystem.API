@@ -122,15 +122,13 @@ watch(
  if (id) {
   await ticketsStore.fetchComments(id);
   messages.value = ticketsStore.comments.map(c => {
-    let rawDate = c.fecha;
-    if (typeof rawDate === 'string') rawDate = rawDate.replace('Z', '').replace(/\+00:00$/, '');
     return {
       id: c.id,
       rol: c.interno ? 'operador' : 'usuario',
       autor: c.autor || 'Sistema',
       autorRol: c.autorRol ?? c.rol ?? c.Rol ?? null,
       texto: c.mensaje,
-      timestamp: rawDate ? new Date(rawDate).getTime() : Date.now()
+      timestamp: c.fecha ? new Date(c.fecha).getTime() : Date.now()
     };
   });
   } else {
@@ -146,15 +144,13 @@ watch(
  (newComments) => {
  if (props.ticketId) {
   messages.value = newComments.map(c => {
-    let rawDate = c.fecha;
-    if (typeof rawDate === 'string') rawDate = rawDate.replace('Z', '').replace(/\+00:00$/, '');
     return {
       id: c.id,
       rol: c.interno ? 'operador' : 'usuario',
       autor: c.autor || 'Sistema',
       autorRol: c.autorRol ?? c.rol ?? c.Rol ?? null,
       texto: c.mensaje,
-      timestamp: rawDate ? new Date(rawDate).getTime() : Date.now()
+      timestamp: c.fecha ? new Date(c.fecha).getTime() : Date.now()
     };
   });
   }
@@ -175,10 +171,10 @@ watch(messages, () => {
 const sendMessage = async () => {
  if (!newMessage.value.trim() || !props.ticketId) return;
  const texto = newMessage.value.trim();
- const interno = authStore.isOperador || authStore.isAdmin;
- try {
- await ticketsStore.addComment(props.ticketId, { mensaje: texto, interno });
- // store watcher will update messages automatically
+  const interno = isInternalMode.value;
+  try {
+  await ticketsStore.addComment(props.ticketId, { mensaje: texto, interno });
+  // store watcher will update messages automatically
  } catch (err) {
  console.error('Failed to send chat message', err);
  }

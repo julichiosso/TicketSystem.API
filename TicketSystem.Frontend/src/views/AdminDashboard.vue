@@ -4,44 +4,44 @@
 
  <main class="flex-1 p-8 space-y-6">
  <header class="flex flex-col gap-6 md:flex-row md:items-center justify-between">
- <div>
- <h2 class="text-2xl font-black text-slate-900 tracking-tight uppercase italic opacity-90">Suite de Control</h2>
- <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Administración del Sistema</p>
- </div>
+  <div>
+  <h2 class="text-xl font-semibold text-slate-800 tracking-tight">Suite de Control</h2>
+  <p class="text-[10px] text-slate-400 font-medium uppercase tracking-[0.1em]">Administración del Sistema</p>
+  </div>
  
  <div class="flex flex-wrap items-center gap-4">
  <!-- Tabs Navigation -->
- <div class="bg-white p-1 rounded-2xl border border-slate-200 flex flex-wrap gap-1 max-w-[calc(100vw-10rem)] overflow-x-auto custom-scrollbar">
- <button 
- v-for="tab in tabs" 
- :key="tab.key"
- @click="activeTab = tab.key"
- class="px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 whitespace-nowrap"
- :class="activeTab === tab.key ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'"
- >
- {{ tab.label }}
- </button>
- </div>
+  <div class="bg-slate-50 p-1 rounded-xl border border-slate-100 flex flex-wrap gap-1 max-w-[calc(100vw-10rem)] overflow-x-auto custom-scrollbar">
+  <button 
+  v-for="tab in tabs" 
+  :key="tab.key"
+  @click="activeTab = tab.key"
+  class="px-5 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap"
+  :class="activeTab === tab.key ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-white/50'"
+  >
+  {{ tab.label }}
+  </button>
+  </div>
 
  <div class="hidden xl:block h-8 w-px bg-white"></div>
 
  <!-- Quick Actions -->
  <div class="flex items-center gap-2">
- <div v-if="activeTab === 'dashboard' || activeTab === 'usuarios'" class="relative w-48 xl:w-64">
- <input
- v-if="activeTab === 'usuarios'"
- v-model="usersSearch"
- placeholder="Buscar usuarios..."
- class="w-full bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm placeholder-slate-400 focus:border-blue-500 outline-none transition-all"
- />
- <input
- v-else
- v-model="ticketsSearch"
- placeholder="Buscar tickets..."
- class="w-full bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm placeholder-slate-400 focus:border-blue-500 outline-none transition-all"
- />
- <SearchIcon class="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500" />
- </div>
+  <div v-if="activeTab === 'dashboard' || activeTab === 'usuarios'" class="relative w-48 xl:w-64">
+  <input
+  v-if="activeTab === 'usuarios'"
+  v-model="usersSearch"
+  placeholder="Buscar usuarios..."
+  class="w-full bg-slate-50 border border-slate-100 px-4 py-2 rounded-xl text-sm placeholder-slate-400 focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all"
+  />
+  <input
+  v-else
+  v-model="ticketsSearch"
+  placeholder="Buscar tickets..."
+  class="w-full bg-slate-50 border border-slate-100 px-4 py-2 rounded-xl text-sm placeholder-slate-400 focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/5 outline-none transition-all"
+  />
+  <SearchIcon class="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+  </div>
 
  <button v-if="activeTab === 'dashboard'" @click="fetchTickets" class="p-2.5 bg-white/[0.03] hover:bg-white/[0.08] text-slate-500 hover:text-slate-900 rounded-xl transition-all active:rotate-180 duration-700" title="Refrescar">
  <RefreshCcwIcon class="w-5 h-5" />
@@ -51,17 +51,17 @@
  </header>
 
  <section v-if="activeTab === 'dashboard'" class="space-y-4">
- <div class="flex items-center justify-between">
- <div class="grid md:grid-cols-5 gap-3 flex-1">
- <div class="bg-white border border-slate-200 shadow-sm rounded-2xl p-4" v-for="metric in metrics" :key="metric.label">
- <div class="text-xs text-slate-500">{{ metric.label }}</div>
- <div class="text-2xl font-bold">{{ metric.value }}</div>
- </div>
- </div>
- <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
- Total: {{ filteredTickets.length }} tickets
- </div>
- </div>
+  <div class="flex items-center justify-between">
+  <div class="grid md:grid-cols-5 gap-3 flex-1">
+  <div class="bg-white border border-slate-100 shadow-sm rounded-xl p-4 transition-all hover:border-blue-100" v-for="metric in metrics" :key="metric.label">
+  <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">{{ metric.label }}</div>
+  <div class="text-xl font-bold text-slate-800">{{ metric.value }}</div>
+  </div>
+  </div>
+  <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-widest pl-4">
+  Total: {{ filteredTickets.length }}
+  </div>
+  </div>
 
  <div class="space-y-3">
  <div v-if="isLoadingTickets" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
@@ -117,11 +117,11 @@
  <div class="text-xs text-slate-500">{{ user.email }}</div>
  </div>
  <div class="flex items-center gap-2">
- <select v-model="user.rol" @change="changeRole(user)" class="bg-white border border-slate-200 rounded px-2 py-1 text-sm">
- <option :value="0">Usuario</option>
- <option :value="1">Operador</option>
- <option :value="2">Administrador</option>
- </select>
+  <select v-model="user.rol" @change="changeRole(user)" class="bg-white border border-slate-100 rounded-lg px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-500/20">
+  <option :value="0">Usuario</option>
+  <option :value="1">Operador</option>
+  <option :value="2">Administrador</option>
+  </select>
  <button @click="deleteUser(user.id)" class="px-3 py-1 rounded bg-rose-500/20 text-xs">Eliminar</button>
  </div>
  </div>
@@ -186,10 +186,10 @@
  entry.type === 'create' ? 'bg-emerald-500' :
  entry.type === 'update' ? 'bg-blue-500' : 'bg-slate-500'
  }`"></div>
- <div class="flex-1">
- <div class="text-sm font-semibold text-slate-900">{{ entry.message }}</div>
- <div class="text-xs text-slate-500 mt-1">{{ formatTime(entry.timestamp) }}</div>
- </div>
+  <div class="flex-1">
+  <div class="text-sm font-semibold text-slate-900">{{ entry.message || entry.detalle || entry.Detalle }}</div>
+  <div class="text-xs text-slate-500 mt-1">{{ formatTime(entry.timestamp || entry.fecha || entry.Fecha) }}</div>
+  </div>
  </div>
  </div>
  <div v-else class="text-center py-12 text-slate-500 text-sm">No hay eventos de auditoría.</div>
@@ -368,21 +368,30 @@ async function fetchMetrics() {
 async function fetchAuditLogs() {
  try {
  const response = await axios.get(`${API_URL}/auditoria`);
- auditLog.value = response.data?.data || [];
+  const rawLogs = response.data?.data || [];
+  auditLog.value = rawLogs.map(l => ({
+    id: l.id || l.Id,
+    message: l.detalle || l.Detalle,
+    type: (l.accion || l.Accion || 'update').toLowerCase(),
+    timestamp: l.fecha || l.Fecha
+  }));
  } catch (err) {
  console.error('Error fetching audit logs:', err);
  }
 }
 
 async function fetchOperators() {
- try {
- const response = await axios.get(`${API_URL}/usuarios`);
- const allUsers = response.data?.data || response.data || [];
- // Filter only operators and admins (rol: 1 = Operador, 2 = Administrador)
- operators.value = allUsers.filter(u => u.rol === 1 || u.rol === 2);
- } catch (err) {
- console.error('Error fetching operators:', err);
- }
+  try {
+    const response = await axios.get(`${API_URL}/usuarios`);
+    const allUsers = response.data?.data || response.data || [];
+    // Filter only operators and admins (supports both 1/2 and 'Operador'/'Administrador')
+    operators.value = allUsers.filter(u => 
+      u.rol === 1 || u.rol === 2 || 
+      u.rol === 'Operador' || u.rol === 'Administrador'
+    );
+  } catch (err) {
+    console.error('Error fetching operators:', err);
+  }
 }
 
 function logout() {
@@ -406,21 +415,18 @@ async function openDetail(ticket) {
 }
 
 async function assignOperator(ticketId, event) {
- const operadorId = event.target.value;
- if (!operadorId) return;
+  const operadorId = event.target.value;
+  if (!operadorId) return;
 
- try {
- await axios.put(`${API_URL}/tickets/${ticketId}/asignar`, {
- ticketId,
- operadorId: operadorId === '' ? null : operadorId
- });
- notificationStore.success('Operador asignado correctamente');
- addAudit(`Operador asignado al ticket ${ticketId}.`, 'update');
- await fetchTickets();
- } catch (err) {
- notificationStore.error('Error al asignar operador');
- console.error('Error assigning operator:', err);
- }
+  try {
+    await ticketsStore.assignOperator(ticketId, operadorId);
+    notificationStore.success('Operador asignado correctamente');
+    addAudit(`Operador asignado al ticket ${ticketId}.`, 'update');
+    await fetchTickets();
+  } catch (err) {
+    notificationStore.error('Error al asignar operador');
+    console.error('Error assigning operator:', err);
+  }
 }
 
 function changeRole(user) {
@@ -429,10 +435,19 @@ function changeRole(user) {
  addAudit(`Rol seleccionado para ${user.nombre}: ${['Usuario', 'Operador', 'Administrador'][user.rol]}.`, 'update');
 }
 
-function deleteUser(userId) {
- const user = users.value.find(u => u.id === userId);
- users.value = users.value.filter((user) => user.id !== userId);
- if (user) addAudit(`Usuario ${user.nombre} eliminado.`, 'delete');
+async function deleteUser(userId) {
+  if (!confirm('¿Estás seguro de que deseas eliminar este usuario? Transacciones y tickets asociados podrían verse afectados.')) return;
+  
+  try {
+    const user = users.value.find(u => u.id === userId);
+    await axios.delete(`${API_URL}/usuarios/${userId}`);
+    users.value = users.value.filter((u) => u.id !== userId);
+    if (user) addAudit(`Usuario ${user.nombre} eliminado.`, 'delete');
+    notificationStore.success('Usuario eliminado correctamente.');
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    notificationStore.error('No se pudo eliminar el usuario.');
+  }
 }
 
 const dirtyUsers = computed(() => users.value.filter(u => u._dirty));

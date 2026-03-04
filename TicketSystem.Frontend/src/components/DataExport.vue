@@ -89,63 +89,69 @@ const selectedFields = ref(['ID', 'Título', 'Usuario', 'Estado', 'Fecha']);
 const availableFields = ref(['ID', 'Título', 'Descripción', 'Usuario', 'Estado', 'Prioridad', 'Fecha', 'Comentarios']);
 
 const previewData = computed(() => {
- let data = [];
- if (dataType.value === 'tickets' && props.tickets) {
- data = props.tickets.map(t => ({
- id: t.id?.substring(0, 8),
- titulo: t.titulo,
- usuario: t.usuarioNombre,
- estado: t.estado,
- prioridad: t.prioridad,
- fecha: new Date(t.fechaCreacion).toLocaleDateString('es-ES')
- }));
- } else if (dataType.value === 'usuarios' && props.usuarios) {
- data = props.usuarios.map(u => ({
- id: u.id,
- nombre: u.nombre,
- email: u.email,
- rol: u.rol
- }));
- }
- return data;
+  let data = [];
+  if (dataType.value === 'tickets' && props.tickets) {
+    data = props.tickets.map(t => ({
+      ID: t.id?.substring(0, 8),
+      Título: t.titulo,
+      Usuario: t.usuarioNombre,
+      Operador: t.operadorAsignadoNombre || 'No asignado',
+      Estado: t.estado,
+      Prioridad: t.prioridad,
+      Fecha: new Date(t.fechaCreacion).toLocaleString('es-AR')
+    }));
+  } else if (dataType.value === 'usuarios' && props.usuarios) {
+    data = props.usuarios.map(u => ({
+      ID: u.id?.substring(0, 8),
+      Nombre: u.nombre,
+      Email: u.email,
+      Rol: u.rol
+    }));
+  } else if (dataType.value === 'auditoria' && props.auditLog) {
+    data = props.auditLog.map(l => ({
+      Fecha: new Date(l.timestamp || l.fecha || l.Fecha).toLocaleString('es-AR'),
+      Mensaje: l.message || l.detalle || l.Detalle,
+      Acción: l.type || l.accion || l.Accion
+    }));
+  }
+  return data;
 });
 
-// Exportar a Excel (simulado - en producción usar xlsx)
 const exportExcel = () => {
- const csv = convertToCSV(previewData.value);
- downloadFile(csv, 'tickets_' + new Date().toISOString().split('T')[0] + '.csv', 'text/csv');
+  const csv = convertToCSV(previewData.value);
+  downloadFile(csv, `${dataType.value}_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
 };
 
-// Exportar a PDF (simulado - en producción usar pdfkit o similar)
-const exportPdf = () => {
- const content = previewData.value.map(item => JSON.stringify(item)).join('\n');
- downloadFile(content, 'tickets_' + new Date().toISOString().split('T')[0] + '.txt', 'text/plain');
-};
-
-// Imprimir
-const printData = () => {
- const html = `
- <table border="1" cellpadding="5" cellspacing="0">
- <thead>
- <tr>${selectedFields.value.map(f => '<th>' + f + '</th>').join('')}</tr>
- </thead>
- <tbody>
- ${previewData.value.map(item =>
- '<tr>' + Object.values(item).map(v => '<td>' + v + '</td>').join('') + '</tr>'
- ).join('')}
- </tbody>
- </table>
- `;
- const win = window.open('', '', 'width=800,height=600');
- win.document.write('<html><body>' + html + '</body></html>');
- win.document.close();
- win.print();
-};
-
-// Exportar a JSON
 const exportJson = () => {
- const json = JSON.stringify(previewData.value, null, 2);
- downloadFile(json, 'tickets_' + new Date().toISOString().split('T')[0] + '.json', 'application/json');
+  const json = JSON.stringify(previewData.value, null, 2);
+  downloadFile(json, `${dataType.value}_${new Date().toISOString().split('T')[0]}.json`, 'application/json');
+};
+
+const exportPdf = () => {
+  const content = previewData.value.map(item => JSON.stringify(item)).join('\n');
+  downloadFile(content, `${dataType.value}_${new Date().toISOString().split('T')[0]}.txt`, 'text/plain');
+};
+
+const printData = () => {
+  const html = `
+    <table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse: collapse; font-family: sans-serif;">
+      <thead>
+        <tr style="background: #f8fafc;">${Object.keys(previewData.value[0] || {}).map(f => '<th>' + f + '</th>').join('')}</tr>
+      </thead>
+      <tbody>
+        ${previewData.value.map(item =>
+          '<tr>' + Object.values(item).map(v => '<td>' + v + '</td>').join('') + '</tr>'
+        ).join('')}
+      </tbody>
+    </table>
+  `;
+  const win = window.open('', '', 'width=800,height=600');
+  win.document.write('<html><head><title>Exportación de Datos</title></head><body><h2 style="font-family: sans-serif;">Reporte de ' + dataType.value + '</h2>' + html + '</body></html>');
+  win.document.close();
+  setTimeout(() => {
+    win.print();
+    win.close();
+  }, 500);
 };
 
 // Convertir a CSV
@@ -170,5 +176,5 @@ const downloadFile = (content, filename, type) => {
 };
 
 // Ícono para Excel (usando simple)
-const FileXlsxIcon = () => FileIcon;
+const FileXlsxIcon = FileIcon;
 </script>

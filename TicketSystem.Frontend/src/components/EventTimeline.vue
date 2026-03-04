@@ -8,8 +8,8 @@
  <div v-if="idx < events.length - 1" class="w-0.5 h-8 bg-slate-700 mt-2"></div>
  </div>
  <div class="pb-4">
- <p class="text-sm font-semibold text-slate-900\">{{ event.title }}</p>
- <p class="text-xs text-slate-500\">{{ formatTime(event.timestamp) }}</p>
+ <p class="text-sm font-semibold text-slate-900">{{ event.title }}</p>
+ <p class="text-xs text-slate-500">{{ formatTime(event.timestamp) }}</p>
  </div>
  </div>
  </div>

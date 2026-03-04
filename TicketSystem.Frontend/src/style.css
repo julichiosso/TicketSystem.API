@@ -1,13 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Outfit:wght@100..900&display=swap');
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Inter", "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
 :root {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  line-height: 1.5;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
   font-weight: 400;
 
+  /* Light Theme Variables */
+  --bg-main: #ffffff;
+  --bg-sidebar: #f8fafc;
+  --bg-card: #ffffff;
+  --text-main: #334155;
+  --text-muted: #64748b;
+  --border-color: #f1f5f9;
+  --accent-blue: #2563eb;
+
   color-scheme: light;
-  color: #0f172a;
-  background-color: #f8fafc;
+  color: var(--text-main);
+  background-color: var(--bg-main);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,6 +29,21 @@
   -moz-osx-font-smoothing: grayscale;
 
   --density-p: 2.5rem;
+}
+
+/* Dark Theme Variables */
+.dark-theme {
+  color-scheme: dark;
+  --bg-main: #0f172a;
+  --bg-sidebar: #1e293b;
+  --bg-card: #1e293b;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --accent-blue: #3b82f6;
+
+  background-color: var(--bg-main);
+  color: var(--text-main);
 }
 
 /* Global Density support */
@@ -26,10 +55,57 @@
   --density-p: 2.5rem;
 }
 
+/* Dark Theme Overrides for Tailwind classes */
+.dark-theme .bg-white {
+  background-color: var(--bg-card) !important;
+}
+
+.dark-theme .text-slate-900,
+.dark-theme .text-slate-800,
+.dark-theme .text-slate-700 {
+  color: var(--text-main) !important;
+}
+
+.dark-theme .text-slate-500,
+.dark-theme .text-slate-400 {
+  color: var(--text-muted) !important;
+}
+
+.dark-theme .border-slate-200,
+.dark-theme .border-slate-100,
+.dark-theme .border-slate-300 {
+  border-color: var(--border-color) !important;
+}
+
+.dark-theme .bg-slate-50,
+.dark-theme .bg-slate-100,
+.dark-theme .bg-slate-200\/50 {
+  background-color: var(--bg-sidebar) !important;
+}
+
+.dark-theme input,
+.dark-theme select,
+.dark-theme textarea {
+  background-color: var(--bg-main) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
 @layer base {
   body {
-    background-color: #f8fafc;
+    background-color: var(--bg-main);
+    color: var(--text-main);
     min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  button,
+  [role="button"],
+  a,
+  select,
+  input[type="submit"],
+  input[type="button"] {
+    cursor: pointer !important;
   }
 
   .page-fade-in {

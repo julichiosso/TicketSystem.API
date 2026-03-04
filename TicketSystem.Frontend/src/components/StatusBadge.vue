@@ -15,27 +15,27 @@ const props = defineProps({
 const badgeClass = computed(() => {
  const typeStr = String(props.type || '').toLowerCase().replaceAll(' ', '');
  const types = {
- alta: 'bg-rose-500/10 text-rose-500 border border-rose-500/20',
- media: 'bg-amber-500/10 text-amber-500 border border-amber-500/20',
- baja: 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20',
- pendiente: 'bg-blue-500/10 text-blue-500 border border-blue-500/20',
- enproceso: 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20',
- resuelto: 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20',
- cerrado: 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
- esperandousuario: 'bg-amber-500/10 text-amber-400 border border-amber-500/20 sla-pulse',
- waitinguser: 'bg-amber-500/10 text-amber-400 border border-amber-500/20 sla-pulse',
- high: 'bg-rose-500/10 text-rose-500 border border-rose-500/20',
- medium: 'bg-amber-500/10 text-amber-500 border border-amber-500/20',
- low: 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20',
- open: 'bg-blue-500/10 text-blue-500 border border-blue-500/20',
- inprogress: 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20',
- resolved: 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20',
- closed: 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
- 0: 'bg-blue-500/10 text-blue-500 border border-blue-500/20',
- 1: 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20',
- 2: 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20',
- 3: 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
- 4: 'bg-amber-500/10 text-amber-400 border border-amber-500/20 sla-pulse'
+  alta: 'bg-rose-50 text-rose-600 border border-rose-100',
+ media: 'bg-amber-50 text-amber-600 border border-amber-100',
+ baja: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+ pendiente: 'bg-blue-50 text-blue-600 border border-blue-100',
+ enproceso: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
+ resuelto: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+ cerrado: 'bg-slate-50 text-slate-500 border border-slate-100',
+ esperandousuario: 'bg-amber-50 text-amber-600 border border-amber-100 sla-pulse',
+ waitinguser: 'bg-amber-50 text-amber-600 border border-amber-100 sla-pulse',
+ high: 'bg-rose-50 text-rose-600 border border-rose-100',
+ medium: 'bg-amber-50 text-amber-600 border border-amber-100',
+ low: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+ open: 'bg-blue-50 text-blue-600 border border-blue-100',
+ inprogress: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
+ resolved: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+ closed: 'bg-slate-50 text-slate-500 border border-slate-100',
+ 0: 'bg-blue-50 text-blue-600 border border-blue-100',
+ 1: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
+ 2: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+ 3: 'bg-slate-50 text-slate-500 border border-slate-100',
+ 4: 'bg-amber-50 text-amber-600 border border-amber-100 sla-pulse'
  };
 
  return types[typeStr] || 'bg-slate-500/10 text-slate-500 border border-slate-500/20';

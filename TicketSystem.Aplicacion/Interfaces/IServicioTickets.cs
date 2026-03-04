@@ -10,10 +10,10 @@ namespace TicketSystem.Aplicacion.Interfaces
         Task<Guid> CrearAsync(CrearTicketDto dto);
         Task<IEnumerable<TicketDto>> ObtenerPorUsuarioAsync(Guid usuarioId);
         Task<IEnumerable<TicketDto>> ObtenerPorOperadorAsync(Guid operadorId);
-        Task CambiarEstadoAsync(Guid ticketId, EstadoTicket nuevoEstado);
+        Task CambiarEstadoAsync(Guid ticketId, EstadoTicket nuevoEstado, Guid actorId);
         Task<PagedResult<TicketDto>> ObtenerFiltradosAsync(FiltroTicketsDto filtro);
-        Task EliminarAsync(Guid id);
-        Task AsignarOperadorAsync(Guid ticketId, Guid? operadorId);
+        Task EliminarAsync(Guid id, Guid actorId);
+        Task AsignarOperadorAsync(Guid ticketId, Guid? operadorId, Guid actorId);
 
         Task<IEnumerable<ComentarioTicketDto>> ObtenerComentariosAsync(Guid ticketId, bool incluirInternos);
         Task<ComentarioTicketDto> AgregarComentarioAsync(Guid ticketId, Guid autorId, CrearComentarioTicketDto dto);

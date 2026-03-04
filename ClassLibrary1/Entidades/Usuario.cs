@@ -15,5 +15,7 @@ namespace TicketSystem.Dominio.Entidades
         public string Email { get; set; } = null!;
         public string PasswordHash { get; set; } = null!;
         public RolUsuario Rol { get; set; }
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpires { get; set; }
     }
 }

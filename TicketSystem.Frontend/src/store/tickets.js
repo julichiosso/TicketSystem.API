@@ -105,8 +105,8 @@ export const useTicketsStore = defineStore('tickets', {
       }
     },
 
+
     async addComment(ticketId, payload) {
-      // Backend nuevo espera: { mensaje, interno }
       const body = {
         mensaje: payload.mensaje,
         interno: !!payload.interno
@@ -130,6 +130,25 @@ export const useTicketsStore = defineStore('tickets', {
       }
 
       return saved;
+    },
+
+    async assignOperator(ticketId, operadorId) {
+      await axios.put(`${API_URL}/tickets/${ticketId}/asignar`, {
+        ticketId,
+        operadorId: operadorId === '' ? null : operadorId
+      });
+
+      // Update local state without full refresh if possible
+      const ticket = this.tickets.find(t => t.id === ticketId);
+      if (ticket) {
+        ticket.operadorAsignadoId = operadorId || null;
+        // Note: In a real scenario, we might want to fetch the operator name or 
+        // have it passed here to update ticket.operadorAsignadoNombre
+      }
+
+      if (this.selectedTicket?.id === ticketId) {
+        this.selectedTicket = { ...this.selectedTicket, operadorAsignadoId: operadorId || null };
+      }
     },
 
     selectTicket(ticket) {

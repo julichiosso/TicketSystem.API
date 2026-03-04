@@ -17,8 +17,11 @@ public class SeedController : ControllerBase
     }
 
     [HttpPost("crear-operador")]
-    public async Task<IActionResult> CrearOperador([FromBody] CrearOperadorRequest request)
+    public async Task<IActionResult> CrearOperador([FromBody] CrearOperadorRequest request, [FromServices] IWebHostEnvironment env)
     {
+        if (!env.IsDevelopment())
+            return NotFound();
+
         try
         {
             var operador = new Usuario

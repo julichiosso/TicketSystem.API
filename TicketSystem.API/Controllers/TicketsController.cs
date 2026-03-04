@@ -44,7 +44,8 @@ public class TicketsController : ControllerBase
         if (!Enum.IsDefined(typeof(EstadoTicket), estado))
             throw new ArgumentException("Estado inválido");
 
-        await _servicioTickets.CambiarEstadoAsync(id, (EstadoTicket)estado);
+        var actorId = ObtenerUsuarioIdDelToken();
+        await _servicioTickets.CambiarEstadoAsync(id, (EstadoTicket)estado, actorId);
         return NoContent();
     }
 
@@ -65,7 +66,8 @@ public class TicketsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Eliminar(Guid id)
     {
-        await _servicioTickets.EliminarAsync(id);
+        var actorId = ObtenerUsuarioIdDelToken();
+        await _servicioTickets.EliminarAsync(id, actorId);
         return NoContent();
     }
 
@@ -112,7 +114,8 @@ public class TicketsController : ControllerBase
     [HttpPut("{id}/asignar")]
     public async Task<IActionResult> AsignarOperador(Guid id, [FromBody] AsignarOperadorDto dto)
     {
-        await _servicioTickets.AsignarOperadorAsync(id, dto.OperadorId);
+        var actorId = ObtenerUsuarioIdDelToken();
+        await _servicioTickets.AsignarOperadorAsync(id, dto.OperadorId, actorId);
         return NoContent();
     }
 

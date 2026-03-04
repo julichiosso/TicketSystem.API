@@ -20,19 +20,25 @@ public class TokenService : ITokenService
         {
             new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
             new Claim(ClaimTypes.Email, usuario.Email),
-            new Claim(ClaimTypes.Role, usuario.Rol.ToString()) // 🔥 CLAVE
+            new Claim(ClaimTypes.Name, usuario.Nombre),
+            new Claim(ClaimTypes.Role, usuario.Rol.ToString())
         };
 
-        var jwtKey = _configuration["Jwt:Key"] ?? "a_very_long_secret_key_that_is_at_least_32_characters_long";
-        if (jwtKey.Length < 32) jwtKey = jwtKey.PadRight(32, '0');
-        
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+        var jwtKey = _configuration["Jwt:Key"]
+            ?? throw new InvalidOperationException("JWT Key not configured");
 
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        var expiresMinutes = _configuration.GetValue<int>("Jwt:ExpiresInMinutes", 60);
+        var issuer = _configuration["Jwt:Issuer"] ?? "TicketSystemAPI";
+        var audience = _configuration["Jwt:Audience"] ?? "TicketSystemFrontend";
+
         var token = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(4),
+            expires: DateTime.UtcNow.AddMinutes(expiresMinutes),
             signingCredentials: creds
         );
 

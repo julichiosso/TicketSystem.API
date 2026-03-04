@@ -57,6 +57,18 @@ public class RepositorioTickets : IRepositorioTickets
         if (filtro.Prioridad.HasValue)
             query = query.Where(t => t.Prioridad == filtro.Prioridad.Value);
 
+        if (filtro.UsuarioId.HasValue)
+            query = query.Where(t => t.UsuarioId == filtro.UsuarioId.Value);
+
+        if (filtro.OperadorId.HasValue)
+            query = query.Where(t => t.OperadorAsignadoId == filtro.OperadorId.Value);
+
+        if (filtro.FechaDesde.HasValue)
+            query = query.Where(t => t.FechaCreacion >= filtro.FechaDesde.Value);
+
+        if (filtro.FechaHasta.HasValue)
+            query = query.Where(t => t.FechaCreacion <= filtro.FechaHasta.Value);
+
         if (!string.IsNullOrEmpty(filtro.Titulo))
             query = query.Where(t => t.Titulo.Contains(filtro.Titulo));
 

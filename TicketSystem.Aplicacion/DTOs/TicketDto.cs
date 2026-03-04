@@ -15,7 +15,13 @@ namespace TicketSystem.Aplicacion.DTOs
         public PrioridadTicket Prioridad { get; set; }
         public EstadoTicket Estado { get; set; }
         public DateTime FechaCreacion { get; set; }
+        public DateTime? FechaAsignacion { get; set; }
+        public DateTime? FechaResolucion { get; set; }
+        public DateTime? FechaLimite { get; set; }
+        public bool SLACumplido { get; set; }
+        public Guid UsuarioId { get; set; }
         public string? UsuarioNombre { get; set; }
+        public Guid? OperadorAsignadoId { get; set; }
         public string? OperadorAsignadoNombre { get; set; }
     }
 }

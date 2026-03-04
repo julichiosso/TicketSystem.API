@@ -2,11 +2,13 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using TicketSystem.API.Middleware;
 using TicketSystem.Aplicacion.Interfaces;
 using TicketSystem.Aplicacion.Servicios;
@@ -17,17 +19,29 @@ using TicketSystem.Infraestructura.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ─── CORS ────────────────────────────────────────────────────────────────────
+var allowedOrigins = builder.Configuration
+    .GetSection("AppSettings:AllowedCorsOrigins")
+    .Get<string[]>() ?? [];
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
-        .AllowAnyHeader()
-        .AllowAnyMethod();
+        if (builder.Environment.IsDevelopment() && allowedOrigins.Length == 0)
+        {
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        }
+        else
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
     });
 });
 
-
+// ─── CONTROLLERS ─────────────────────────────────────────────────────────────
 builder.Services
     .AddControllers()
     .AddJsonOptions(options =>
@@ -39,26 +53,31 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-
+// ─── DATABASE ─────────────────────────────────────────────────────────────────
 builder.Services.AddDbContext<TicketSystemDbContext>(options =>
     options.UseSqlite(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
+// ─── REPOSITORIES & SERVICES ─────────────────────────────────────────────────
 builder.Services.AddScoped<IRepositorioTickets, RepositorioTickets>();
 builder.Services.AddScoped<IRepositorioUsuarios, RepositorioUsuarios>();
-
-
 builder.Services.AddScoped<IServicioTickets, ServicioTickets>();
 builder.Services.AddScoped<IServicioUsuarios, ServicioUsuarios>();
+builder.Services.AddScoped<IServicioEmail, TicketSystem.Infraestructura.Servicios.ServicioEmail>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 
+// ─── JWT ──────────────────────────────────────────────────────────────────────
+var jwtSection = builder.Configuration.GetSection("Jwt");
+var jwtKey = jwtSection["Key"]
+    ?? throw new InvalidOperationException("JWT Key is not configured. Set Jwt:Key in appsettings or environment variable.");
 
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var jwtKey = jwtSettings["Key"] ?? "a_very_long_secret_key_that_is_at_least_32_characters_long";
-if (jwtKey.Length < 32) jwtKey = jwtKey.PadRight(32, '0');
+if (jwtKey.Length < 32)
+    throw new InvalidOperationException($"JWT Key must be at least 32 characters long. Current length: {jwtKey.Length}");
+
 var key = Encoding.UTF8.GetBytes(jwtKey);
+var jwtIssuer = jwtSection["Issuer"] ?? "TicketSystemAPI";
+var jwtAudience = jwtSection["Audience"] ?? "TicketSystemFrontend";
 
 builder.Services.AddAuthentication(options =>
 {
@@ -67,13 +86,15 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false;
+    options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     options.SaveToken = true;
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = false,
-        ValidateAudience = false,
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
@@ -82,11 +103,36 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Redundant calls removed
+// ─── RATE LIMITING ────────────────────────────────────────────────────────────
+builder.Services.AddRateLimiter(options =>
+{
+    // Auth endpoints: 10 requests per minute per IP
+    options.AddFixedWindowLimiter("AuthPolicy", limiter =>
+    {
+        limiter.PermitLimit = 10;
+        limiter.Window = TimeSpan.FromMinutes(1);
+        limiter.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiter.QueueLimit = 0;
+    });
 
+    options.RejectionStatusCode = 429; // Too Many Requests
+});
+
+// ─── HEALTH CHECKS ────────────────────────────────────────────────────────────
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<TicketSystemDbContext>("database");
+
+// ─── SWAGGER ──────────────────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "TicketSystem API",
+        Version = "v1",
+        Description = "Sistema de tickets de soporte técnico"
+    });
+
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -94,7 +140,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Ingrese SOLO el token"
+        Description = "Ingrese SOLO el token JWT"
     });
 
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
@@ -113,12 +159,10 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-
+// ─────────────────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
-
 app.UseMiddleware<ExceptionMiddleware>();
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -127,38 +171,23 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowFrontend");
-
-
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// ─── HEALTH CHECK ENDPOINT ───────────────────────────────────────────────────
+app.MapHealthChecks("/health");
+
 app.MapControllers();
 
-
+// ─── DATABASE MIGRATION & SEED ───────────────────────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<TicketSystemDbContext>();
     var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<Usuario>>();
 
-  
-    // in development we may have an outdated database built with EnsureCreated
-    // deleting it guarantees migrations run from the first one and avoid conflicts
-    // COMENTADO: NO borrar DB en cada arranque (perdemos datos)
-    // if (app.Environment.IsDevelopment())
-    // {
-    //     try
-    //     {
-    //         await context.Database.EnsureDeletedAsync();
-    //     }
-    //     catch { /* swallow */ }
-    // }
-
-    // apply any pending EF Core migrations (creates DB if necessary)
     await context.Database.MigrateAsync();
-
-    // seed initial data after migrations
     await DataSeeder.SeedAsync(context, passwordHasher);
 }
 

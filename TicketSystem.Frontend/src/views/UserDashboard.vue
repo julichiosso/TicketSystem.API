@@ -5,8 +5,8 @@
  <!-- Main Content -->
  <main class="flex-1 min-w-0 h-screen overflow-y-auto page-fade-in custom-scrollbar">
       <header class="h-20 flex items-center justify-between px-10 bg-white/[0.01] border-b border-white/[0.02] sticky top-0 z-30">
- <div>
- <h2 class="text-2xl font-black text-slate-900 tracking-tight uppercase italic opacity-90">Mis Tickets</h2>
+  <div>
+  <h2 class="text-xl font-semibold text-slate-800 tracking-tight">Mis Tickets</h2>
  <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Soporte y Seguimiento</p>
  </div>
 
@@ -50,60 +50,60 @@
  <div class="max-w-[1600px] mx-auto transition-all duration-500" :style="{ padding: 'var(--density-p, 2.5rem)' }">
  <!-- Welcome Section -->
  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
- <div class="bg-white border border-slate-200 shadow-sm rounded-3xl p-6 col-span-1 md:col-span-2 relative overflow-hidden">
- <div class="flex items-center justify-between relative z-10">
- <div>
- <h2 class="text-2xl font-black text-slate-900 mb-1">¡Hola, {{ authStore.user?.nombre }}!</h2>
- <p class="text-slate-500 text-sm">Gestiona y da seguimiento a tus tickets de soporte</p>
- </div>
- <div class="text-6xl opacity-10">🎟️</div>
- </div>
- </div>
- <div class="bg-white border border-slate-200 shadow-sm rounded-3xl p-6 relative overflow-hidden">
- <div class="relative z-10">
- <p class="text-xs text-slate-500 font-bold uppercase mb-2">Tiempo Promedio</p>
- <h3 class="text-2xl font-black text-blue-400 mb-1">~2h</h3>
- <p class="text-xs text-slate-500">Respuesta del equipo</p>
- </div>
- </div>
+  <div class="bg-white border border-slate-100 shadow-sm rounded-2xl p-6 col-span-1 md:col-span-2 relative overflow-hidden">
+  <div class="flex items-center justify-between relative z-10">
+  <div>
+  <h2 class="text-xl font-bold text-slate-800 mb-1">¡Hola, {{ authStore.user?.nombre }}!</h2>
+  <p class="text-slate-500 text-sm">Gestiona y da seguimiento a tus tickets de soporte</p>
+  </div>
+  <div class="text-5xl opacity-5">🎟️</div>
+  </div>
+  </div>
+  <div class="bg-white border border-slate-100 shadow-sm rounded-2xl p-6 relative overflow-hidden">
+  <div class="relative z-10">
+  <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-2">Tiempo Promedio</p>
+  <h3 class="text-xl font-bold text-blue-600 mb-1">~2h</h3>
+  <p class="text-xs text-slate-400">Respuesta del equipo</p>
+  </div>
+  </div>
  </div>
  <!-- Dashboard Stats -->
- <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
- <div class="bg-white/5 border border-slate-200 p-8 rounded-[2.5rem] relative overflow-hidden group hover:scale-[1.02] transition-all bg-white border border-slate-200 shadow-sm">
- <div class="relative z-10">
- <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900/40 mb-1">Pendientes</p>
- <h4 class="text-4xl font-black text-slate-900 mb-2">{{ stats.open }}</h4>
- <p class="text-xs text-slate-500 font-medium italic">En espera de respuesta</p>
- </div>
- <InboxIcon class="absolute -right-6 -bottom-6 w-32 h-32 text-primary/10 group-hover:scale-110 transition-transform duration-700" />
- </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+  <div class="bg-white border border-slate-100 p-8 rounded-2xl relative overflow-hidden group hover:scale-[1.01] transition-all shadow-sm">
+  <div class="relative z-10">
+  <p class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">Pendientes</p>
+  <h4 class="text-3xl font-bold text-slate-800 mb-2">{{ stats.open }}</h4>
+  <p class="text-xs text-slate-400 font-medium">En espera de respuesta</p>
+  </div>
+  <InboxIcon class="absolute -right-4 -bottom-4 w-24 h-24 text-slate-50 group-hover:scale-110 transition-transform duration-700" />
+  </div>
 
- <div class="bg-white/5 border border-slate-200 p-8 rounded-[2.5rem] relative overflow-hidden group hover:scale-[1.02] transition-all bg-white border border-slate-200 shadow-sm">
- <div class="relative z-10">
- <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900/40 mb-1">En Proceso</p>
- <h4 class="text-4xl font-black text-slate-900 mb-2">{{ stats.processing }}</h4>
- <p class="text-xs text-slate-500 font-medium italic">Siendo atendidos</p>
- </div>
- <TimerIcon class="absolute -right-6 -bottom-6 w-32 h-32 text-primary/10 group-hover:scale-110 transition-transform duration-700" />
- </div>
+  <div class="bg-white border border-slate-100 p-8 rounded-2xl relative overflow-hidden group hover:scale-[1.01] transition-all shadow-sm">
+  <div class="relative z-10">
+  <p class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">En Proceso</p>
+  <h4 class="text-3xl font-bold text-slate-800 mb-2">{{ stats.processing }}</h4>
+  <p class="text-xs text-slate-400 font-medium">Siendo atendidos</p>
+  </div>
+  <TimerIcon class="absolute -right-4 -bottom-4 w-24 h-24 text-slate-50 group-hover:scale-110 transition-transform duration-700" />
+  </div>
 
- <div class="bg-white/5 border border-slate-200 p-8 rounded-[2.5rem] relative overflow-hidden group hover:scale-[1.02] transition-all bg-white border border-slate-200 shadow-sm">
- <div class="relative z-10">
- <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900/40 mb-1">Resueltos</p>
- <h4 class="text-4xl font-black text-slate-900 mb-2">{{ stats.resolved }}</h4>
- <p class="text-xs text-slate-500 font-medium italic">Soluciones completadas</p>
- </div>
- <CheckCircleIcon class="absolute -right-6 -bottom-6 w-32 h-32 text-emerald-500/10 group-hover:scale-110 transition-transform duration-700" />
- </div>
- </div>
+  <div class="bg-white border border-slate-100 p-8 rounded-2xl relative overflow-hidden group hover:scale-[1.01] transition-all shadow-sm">
+  <div class="relative z-10">
+  <p class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">Resueltos</p>
+  <h4 class="text-3xl font-bold text-slate-800 mb-2">{{ stats.resolved }}</h4>
+  <p class="text-xs text-slate-400 font-medium">Soluciones completadas</p>
+  </div>
+  <CheckCircleIcon class="absolute -right-4 -bottom-4 w-24 h-24 text-emerald-500/5 group-hover:scale-110 transition-transform duration-700" />
+  </div>
+  </div>
 
  <!-- Section Title -->
  <div class="flex flex-col sm:flex-row items-center justify-between mb-8 px-2 gap-4">
  <div class="flex items-center gap-6">
- <h3 class="text-lg font-black text-slate-900 flex items-center gap-3">
- <div :class="`w-1.5 h-6 bg-${settingsStore.themeColor}-600 rounded-full transition-colors` "></div>
- LISTADO DE TICKETS
- </h3>
+  <h3 class="text-base font-bold text-slate-800 flex items-center gap-3">
+  <div :class="`w-1 h-5 bg-${settingsStore.themeColor}-600 rounded-full transition-colors` "></div>
+  LISTADO DE TICKETS
+  </h3>
         <button @click="showModal = true" class="group flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm">
           <PlusIcon class="w-4 h-4 group-hover:rotate-90 transition-transform" />
           <span class="text-sm hidden sm:inline">Nuevo Ticket</span>
@@ -142,7 +142,7 @@
  />
  </div>
 
- <div v-else class="flex flex-col items-center justify-center py-32 border-2 border-dashed border-slate-900 rounded-[3rem] bg-white group transition-all duration-700">
+ <div v-else class="flex flex-col items-center justify-center py-32 border-2 border-dashed border-slate-200 rounded-[3rem] bg-white group transition-all duration-700">
  <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-8 border border-slate-200 group-hover:scale-110 group-hover:border-blue-300 transition-all duration-700">
  <InboxIcon class="w-10 h-10 text-slate-700 group-hover:text-blue-500 transition-colors" />
  </div>
@@ -157,9 +157,9 @@
  No se encontraron tickets que coincidan con "{{ searchQuery }}".
  </template>
  </p>
-        <button v-if="tickets.length === 0" @click="showModal = true" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg shadow-sm transition-colors">
+        <button v-if="tickets.length === 0" @click="showModal = true" class="group flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg shadow-sm transition-colors">
+          <PlusIcon class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
           Crear mi primer ticket
-          <PlusCircleIcon class="w-5 h-5 ml-1" />
         </button>
  </div>
  </div>

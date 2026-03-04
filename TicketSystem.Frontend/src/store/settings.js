@@ -27,7 +27,11 @@ export const useSettingsStore = defineStore('settings', {
             localStorage.setItem('notificationsEnabled', this.notificationsEnabled);
         },
         applyTheme() {
-            document.documentElement.className = `theme-${this.themeColor}`;
+            const isDark = this.themeColor === 'dark';
+            document.documentElement.classList.toggle('dark-theme', isDark);
+
+            // Also toggle Tailwind's dark mode class if they use 'class' strategy
+            document.documentElement.classList.toggle('dark', isDark);
         },
         applyDensity() {
             document.documentElement.setAttribute('data-density', this.uiDensity);
@@ -38,24 +42,5 @@ export const useSettingsStore = defineStore('settings', {
         }
     },
     getters: {
-        themeClasses: (state) => {
-            const colors = {
-                light: 'from-gray-200 to-gray-400 shadow-gray-300/20',
-                blue: 'from-blue-600 to-indigo-600 shadow-blue-500/20',
-                indigo: 'from-indigo-600 to-violet-600 shadow-indigo-500/20',
-                emerald: 'from-emerald-600 to-teal-600 shadow-emerald-500/20',
-                rose: 'from-rose-600 to-pink-600 shadow-rose-500/20'
-            };
-            return colors[state.themeColor] || colors.blue;
-        },
-        accentColor: (state) => {
-            const colors = {
-                blue: 'text-blue-400',
-                indigo: 'text-indigo-400',
-                emerald: 'text-emerald-400',
-                rose: 'text-rose-400'
-            };
-            return colors[state.themeColor] || colors.blue;
-        }
     }
 });

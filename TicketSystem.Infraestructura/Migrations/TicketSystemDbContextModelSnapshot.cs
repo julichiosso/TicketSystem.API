@@ -90,10 +90,16 @@ namespace TicketSystem.Infraestructura.Migrations
                     b.Property<int>("Estado")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("FechaAsignacion")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("FechaCreacion")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("FechaLimite")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("FechaResolucion")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsDeleted")
@@ -140,6 +146,12 @@ namespace TicketSystem.Infraestructura.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordResetToken")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("PasswordResetTokenExpires")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Rol")

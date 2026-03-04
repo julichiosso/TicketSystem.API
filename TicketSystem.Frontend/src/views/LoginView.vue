@@ -40,7 +40,7 @@
             <div>
               <div class="flex justify-between items-center mb-2">
                 <label class="block text-slate-400 text-xs font-bold uppercase tracking-wide">Contraseña</label>
-                <a href="#" class="text-blue-500 font-medium text-xs hover:text-blue-600 transition-colors">¿Olvidaste tu contraseña?</a>
+                <router-link to="/forgot-password" class="text-blue-500 font-medium text-xs hover:text-blue-600 transition-colors">¿Olvidaste tu contraseña?</router-link>
               </div>
               <input 
                 v-model="password" 
@@ -83,8 +83,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../store/auth';
 import { useNotificationStore } from '../store/notifications';
 import { TicketIcon, Loader2Icon, AlertCircleIcon } from 'lucide-vue-next';
@@ -93,10 +93,19 @@ import ErrorMessage from '../components/ErrorMessage.vue';
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
 const router = useRouter();
+const route = useRoute();
 
 const email = ref('');
 const password = ref('');
 const formErrors = ref({ email: '', password: '' });
+
+onMounted(() => {
+  if (route.query.expired === 'true') {
+    notificationStore.error('Tu sesión ha expirado por seguridad. Por favor, iniciá sesión nuevamente.');
+    // Keep it clean
+    router.replace('/'); 
+  }
+});
 
 const handleLogin = async () => {
   formErrors.value = { email: '', password: '' };

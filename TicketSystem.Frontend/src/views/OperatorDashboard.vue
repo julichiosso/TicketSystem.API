@@ -4,24 +4,24 @@
 
  <main class="flex-1 p-8 space-y-6">
  <header class="flex flex-col gap-6 md:flex-row md:items-center justify-between">
- <div>
- <h2 class="text-2xl font-black text-slate-900 tracking-tight uppercase italic opacity-90">Panel Superior</h2>
- <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Operador de Resoluciones</p>
- </div>
+  <div>
+  <h2 class="text-xl font-semibold text-slate-800 tracking-tight">Panel Superior</h2>
+  <p class="text-[10px] text-slate-400 font-medium uppercase tracking-[0.1em]">Operador de Resoluciones</p>
+  </div>
  
  <div class="flex flex-wrap items-center gap-4">
  <!-- Tabs -->
- <div class="bg-white p-1 rounded-2xl border border-slate-200 flex">
- <button 
- v-for="tab in tabs" 
- :key="tab.key"
- @click="activeTab = tab.key"
- class="px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300"
- :class="activeTab === tab.key ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'"
- >
- {{ tab.label }}
- </button>
- </div>
+  <div class="bg-slate-50 p-1 rounded-xl border border-slate-100 flex">
+  <button 
+  v-for="tab in tabs" 
+  :key="tab.key"
+  @click="activeTab = tab.key"
+  class="px-5 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all duration-300"
+  :class="activeTab === tab.key ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-white/50'"
+  >
+  {{ tab.label }}
+  </button>
+  </div>
 
  <div class="hidden sm:block h-8 w-px bg-white"></div>
 
@@ -62,7 +62,7 @@
  </TicketCard>
  </div>
 
- <div v-else class="flex flex-col items-center justify-center py-32 border-2 border-dashed border-slate-900 rounded-[3rem] bg-white group transition-all duration-700">
+ <div v-else class="flex flex-col items-center justify-center py-32 border-2 border-dashed border-slate-200 rounded-[3rem] bg-white group transition-all duration-700">
  <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-8 border border-slate-200 group-hover:scale-110 group-hover:border-blue-300 transition-all duration-700">
  <InboxIcon class="w-10 h-10 text-slate-700 group-hover:text-blue-500 transition-colors" />
  </div>
@@ -223,9 +223,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.bg-white border border-slate-200 shadow-sm {
- background: rgba(15, 23, 42, 0.4);
- backdrop-filter: blur(10px);
- border: 1px solid rgba(255, 255, 255, 0.05);
-}
+/* Scoped styles kept minimal for clean inheritance from global style.css */
 </style>

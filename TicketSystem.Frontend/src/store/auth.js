@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-export const API_URL = 'http://localhost:5134/api';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5134/api';
 
 export const useAuthStore = defineStore('auth', {
     state: () => {
@@ -35,11 +35,11 @@ export const useAuthStore = defineStore('auth', {
                 return true;
             } catch (err) {
                 console.error('Login error:', err.response?.data || err.message);
-                this.error = err.response?.data?.message || 
-                             err.response?.data?.details || 
-                             err.response?.statusText || 
-                             err.message || 
-                             'Error de autenticación';
+                this.error = err.response?.data?.message ||
+                    err.response?.data?.details ||
+                    err.response?.statusText ||
+                    err.message ||
+                    'Error de autenticación';
                 return false;
             } finally {
                 this.loading = false;
@@ -55,6 +55,32 @@ export const useAuthStore = defineStore('auth', {
                 console.error('Register error:', err.response?.data || err);
                 this.error = err.response?.data?.message || err.message || 'Error en el registro';
                 return false;
+            } finally {
+                this.loading = false;
+            }
+        },
+        async forgotPassword(email) {
+            this.loading = true;
+            this.error = null;
+            try {
+                const response = await axios.post(`${API_URL}/auth/forgot-password`, { email });
+                return { success: true, message: response.data.message };
+            } catch (err) {
+                this.error = err.response?.data?.message || 'Error al solicitar recuperación';
+                return { success: false, message: this.error };
+            } finally {
+                this.loading = false;
+            }
+        },
+        async resetPassword(data) {
+            this.loading = true;
+            this.error = null;
+            try {
+                const response = await axios.post(`${API_URL}/auth/reset-password`, data);
+                return { success: true, message: response.data.message };
+            } catch (err) {
+                this.error = err.response?.data?.message || 'Error al restablecer contraseña';
+                return { success: false, message: this.error };
             } finally {
                 this.loading = false;
             }

@@ -21,6 +21,8 @@ namespace TicketSystem.Dominio.Entidades
         public Usuario? OperadorAsignado { get; set; }
 
         public DateTime FechaCreacion { get; set; }
+        public DateTime? FechaAsignacion { get; set; }
+        public DateTime? FechaResolucion { get; set; }
         public DateTime? FechaLimite { get; set; }
         public bool SLACumplido { get; set; } = true;
         public bool IsDeleted { get; set; } = false;
