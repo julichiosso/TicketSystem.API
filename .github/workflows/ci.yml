@@ -27,13 +27,13 @@ jobs:
         run: dotnet build TicketSystem.Dominio.sln --no-restore --configuration Release
 
       - name: Correr tests
-        run: dotnet test TicketSystem.Tests/TicketSystem.Tests.csproj --no-build --configuration Release --verbosity normal
+        run: dotnet test TicketSystem.Tests/TicketSystem.Tests.csproj --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=results.trx" --results-directory ./TestResults
 
       - name: Publicar resultado de tests
         if: always()
         uses: dorny/test-reporter@v1
         with:
           name: xUnit Tests
-          path: '**/TestResults/*.xml'
+          path: './TestResults/results.trx'
           reporter: dotnet-trx
-          fail-on-error: true
+          fail-on-error: false
