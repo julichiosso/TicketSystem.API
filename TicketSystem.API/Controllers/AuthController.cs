@@ -53,10 +53,17 @@ public class AuthController : ControllerBase
             throw new UnauthorizedAccessException("Credenciales inválidas");
 
         var token = _tokenService.GenerarToken(usuario);
+        var refreshToken = _tokenService.GenerarRefreshToken();
+
+        var refreshDays = _configuration.GetValue<int>("Jwt:RefreshExpiresInDays", 7);
+        usuario.RefreshToken = refreshToken;
+        usuario.RefreshTokenExpires = DateTime.UtcNow.AddDays(refreshDays);
+        await _repositorioUsuarios.ActualizarAsync(usuario);
 
         return Ok(new
         {
             token,
+            refreshToken,
             usuario = new
             {
                 usuario.Id,
@@ -64,6 +71,29 @@ public class AuthController : ControllerBase
                 usuario.Email,
                 usuario.Rol
             }
+        });
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
+    {
+        var usuario = await _repositorioUsuarios.ObtenerPorRefreshTokenAsync(request.RefreshToken);
+
+        if (usuario == null || usuario.RefreshTokenExpires < DateTime.UtcNow)
+            return Unauthorized(new { message = "Refresh token inválido o expirado." });
+
+        var nuevoToken = _tokenService.GenerarToken(usuario);
+        var nuevoRefreshToken = _tokenService.GenerarRefreshToken();
+
+        var refreshDays = _configuration.GetValue<int>("Jwt:RefreshExpiresInDays", 7);
+        usuario.RefreshToken = nuevoRefreshToken;
+        usuario.RefreshTokenExpires = DateTime.UtcNow.AddDays(refreshDays);
+        await _repositorioUsuarios.ActualizarAsync(usuario);
+
+        return Ok(new
+        {
+            token = nuevoToken,
+            refreshToken = nuevoRefreshToken
         });
     }
 
@@ -88,6 +118,24 @@ public class AuthController : ControllerBase
         await _repositorioUsuarios.AgregarAsync(usuario);
 
         return Ok(new { message = "Usuario registrado correctamente" });
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (id == null) return Unauthorized();
+
+        var usuario = await _repositorioUsuarios.ObtenerPorIdAsync(Guid.Parse(id));
+        if (usuario != null)
+        {
+            usuario.RefreshToken = null;
+            usuario.RefreshTokenExpires = null;
+            await _repositorioUsuarios.ActualizarAsync(usuario);
+        }
+
+        return NoContent();
     }
 
     [Authorize]
@@ -130,21 +178,16 @@ public class AuthController : ControllerBase
     {
         var usuario = await _repositorioUsuarios.ObtenerPorEmailAsync(request.Email);
         if (usuario == null)
-        {
-            // Security: don't reveal if user exists or not
             return Ok(new { message = "Si el correo está registrado, recibirás un enlace de recuperación." });
-        }
 
-        // Generate a cryptographically secure token (32 hex chars)
         var tokenBytes = new byte[16];
         RandomNumberGenerator.Fill(tokenBytes);
-        var token = Convert.ToHexString(tokenBytes).ToUpper(); // 32 chars
+        var token = Convert.ToHexString(tokenBytes).ToUpper();
 
         usuario.PasswordResetToken = token;
         usuario.PasswordResetTokenExpires = DateTime.UtcNow.AddHours(1);
         await _repositorioUsuarios.ActualizarAsync(usuario);
 
-        // Log token for development testing
         Console.WriteLine($"[DEBUG] Reset Token for {request.Email}: {token}");
 
         var frontendBase = _configuration["AppSettings:FrontendBaseUrl"] ?? "http://localhost:5173";
@@ -157,19 +200,14 @@ public class AuthController : ControllerBase
                 </div>
                 <div style='padding: 20px; background-color: #ffffff;'>
                     <h2 style='color: #333;'>Solicitud de cambio de contraseña</h2>
-                    <p style='color: #555; line-height: 1.6;'>Has solicitado restablecer tu contraseña para tu cuenta en <strong>TicketSystem</strong>.</p>
-                    <p style='color: #555; line-height: 1.6;'>Tu código de recuperación es:</p>
-                    <div style='background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; border-radius: 4px; margin: 20px 0; color: #2563eb; letter-spacing: 2px; word-break: break-all;'>
+                    <p style='color: #555;'>Tu código de recuperación es:</p>
+                    <div style='background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; border-radius: 4px; margin: 20px 0; color: #2563eb; letter-spacing: 2px;'>
                         {token}
                     </div>
-                    <p style='color: #555; line-height: 1.6; text-align: center;'>O hacé clic en el siguiente botón para continuar:</p>
                     <div style='text-align: center; margin: 30px 0;'>
-                        <a href='{resetUrl}' style='background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;'>Cambiar contraseña</a>
+                        <a href='{resetUrl}' style='background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Cambiar contraseña</a>
                     </div>
-                    <p style='color: #777; font-size: 12px; margin-top: 30px;'>Si no solicitaste este cambio, podés ignorar este correo de forma segura. El código expirará en 1 hora.</p>
-                </div>
-                <div style='text-align: center; padding: 20px; color: #aaa; font-size: 11px;'>
-                    &copy; {DateTime.Now.Year} TicketSystem. Todos los derechos reservados.
+                    <p style='color: #777; font-size: 12px;'>El código expirará en 1 hora.</p>
                 </div>
             </div>";
 
@@ -180,8 +218,6 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             Console.WriteLine($"[SMTP ERROR] {ex.Message}");
-            // Return success anyway in dev to allow testing via console log
-            return Ok(new { message = "Si el correo está registrado, recibirás un enlace de recuperación. (Revisa la consola para el token en desarrollo)" });
         }
 
         return Ok(new { message = "Si el correo está registrado, recibirás un enlace de recuperación." });

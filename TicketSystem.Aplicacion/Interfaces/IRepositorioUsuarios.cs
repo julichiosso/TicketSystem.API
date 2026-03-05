@@ -8,9 +8,9 @@ namespace TicketSystem.Aplicacion.Interfaces
         Task<IEnumerable<Usuario>> ObtenerTodosAsync();
         Task<Usuario?> ObtenerPorIdAsync(Guid id);
         Task<Usuario?> ObtenerPorEmailAsync(string email);
+        Task<Usuario?> ObtenerPorRefreshTokenAsync(string refreshToken);
         Task AgregarAsync(Usuario usuario);
         Task EliminarAsync(Usuario usuario);
-
         Task EliminarAsync(Guid id);
         Task ActualizarAsync(Usuario usuario);
     }

@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TicketSystem.Dominio.Enumeraciones;
 
 namespace TicketSystem.Dominio.Entidades
@@ -15,7 +10,13 @@ namespace TicketSystem.Dominio.Entidades
         public string Email { get; set; } = null!;
         public string PasswordHash { get; set; } = null!;
         public RolUsuario Rol { get; set; }
+
+        // Password Reset
         public string? PasswordResetToken { get; set; }
         public DateTime? PasswordResetTokenExpires { get; set; }
+
+        // Refresh Token
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpires { get; set; }
     }
 }

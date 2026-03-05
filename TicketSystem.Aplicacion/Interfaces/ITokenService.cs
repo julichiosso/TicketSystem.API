@@ -1,6 +1,10 @@
 ﻿using TicketSystem.Dominio.Entidades;
 
-public interface ITokenService
+namespace TicketSystem.Aplicacion.Interfaces
 {
-    string GenerarToken(Usuario usuario);
+    public interface ITokenService
+    {
+        string GenerarToken(Usuario usuario);
+        string GenerarRefreshToken();
+    }
 }

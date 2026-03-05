@@ -1,79 +1,98 @@
 <template>
- <div class="japanese-box flex flex-col w-full max-w-full h-full max-h-[60vh] bg-white">
- <h3 class="text-lg font-black text-slate-900 mb-4">Chat de Soporte</h3>
+  <div class="flex flex-col w-full h-full"
+    :class="settingsStore.isDark ? 'bg-slate-900' : 'bg-white'">
 
- <!-- messages area -->
- <div ref="messagesContainer" class="flex-1 overflow-y-auto space-y-3 mb-4 pb-2 custom-scrollbar">
- <div
- v-for="msg in messages"
- :key="msg.id"
- :class="{
- 'flex justify-end': msg.rol === 'usuario',
- 'flex justify-start': msg.rol !== 'usuario'
- }"
- >
- <div
- :class="{
- 'bg-blue-600 text-white rounded-l-2xl rounded-tr-2xl shadow-lg shadow-blue-200': msg.rol === 'usuario' && !msg.interno,
- 'bg-white text-slate-900 rounded-r-2xl rounded-tl-2xl border border-slate-200': msg.rol !== 'usuario' && !msg.interno,
- 'bg-amber-500/10 text-amber-200 rounded-2xl border border-amber-500/20 w-full max-w-sm': msg.interno
- }"
- class="px-4 py-2 relative group"
- >
- <div v-if="msg.interno" class="absolute -top-2 -right-2 bg-amber-500 text-[8px] font-black text-slate-950 px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-lg">Nota Interna</div>
- 
- <p class="text-[10px] font-bold mb-1 opacity-70 flex items-center gap-2">
- {{ msg.autor }} 
- <span class="text-[9px] opacity-50 tracking-widest uppercase">/ {{ roleLabel(msg.autorRol) }}</span>
- </p>
- <p class="text-sm leading-relaxed">{{ msg.texto }}</p>
- <p class="text-[9px] opacity-40 mt-1 font-mono tracking-tighter">{{ formatTime(msg.timestamp) }}</p>
- </div>
- </div>
- <div v-if="messages.length === 0" class="flex flex-col items-center justify-center h-48 text-slate-600 space-y-4">
- <div class="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center bg-white/[0.02]">
- <MessageSquareIcon class="w-6 h-6 opacity-20" />
- </div>
- <p class="text-xs font-bold uppercase tracking-widest">Sin actividad aún</p>
- </div>
- </div>
+    <!-- Messages area -->
+    <div ref="messagesContainer" class="flex-1 overflow-y-auto space-y-2 mb-3 custom-scrollbar px-1">
 
- <!-- input area -->
- <div class="space-y-3">
- <div v-if="authStore.isAdmin || authStore.isOperador" class="flex items-center gap-4 px-2">
- <label class="flex items-center gap-2 cursor-pointer group">
- <div 
- class="w-8 h-4 rounded-full transition-all relative border border-slate-200"
- :class="isInternalMode ? 'bg-amber-500/20 border-amber-500/40' : 'bg-white'"
- >
- <input type="checkbox" v-model="isInternalMode" class="hidden" />
- <div 
- class="absolute top-0.5 w-2.5 h-2.5 rounded-full transition-all shadow-sm"
- :class="isInternalMode ? 'right-0.5 bg-amber-400' : 'left-0.5 bg-slate-500'"
- ></div>
- </div>
- <span class="text-[10px] font-black uppercase tracking-widest group-hover:text-amber-400 transition-colors" :class="isInternalMode ? 'text-amber-400' : 'text-slate-500'">Modo Nota Interna</span>
- </label>
- </div>
+      <div v-if="messages.length === 0"
+        class="flex flex-col items-center justify-center h-48 space-y-3">
+        <MessageSquareIcon class="w-8 h-8 opacity-20"
+          :class="settingsStore.isDark ? 'text-slate-500' : 'text-slate-400'" />
+        <p class="text-xs font-bold uppercase tracking-widest"
+          :class="settingsStore.isDark ? 'text-slate-600' : 'text-slate-400'">
+          Sin actividad aún
+        </p>
+      </div>
 
- <div class="flex gap-2">
- <input
- v-model="newMessage"
- @keyup.enter="sendMessage"
- :placeholder="isInternalMode ? 'Escribe una nota para el equipo...' : 'Escribe tu mensaje...'"
- class="flex-1 bg-white/[0.02] border border-slate-200 px-6 py-4 rounded-2xl text-sm placeholder-slate-600 focus:border-blue-500/50 outline-none transition-all font-medium"
- />
- <button
- @click="sendMessage"
- :disabled="!newMessage.trim()"
- :class="isInternalMode ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-500/20' : 'bg-blue-600 hover:bg-blue-500 shadow-blue-200'"
- class="px-8 py-2 text-white rounded-2xl text-xs font-black uppercase tracking-widest disabled:opacity-20 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm"
- >
- {{ isInternalMode ? 'Nota' : 'Enviar' }}
- </button>
- </div>
- </div>
- </div>
+      <div v-for="msg in messages" :key="msg.id"
+        :class="esPropio(msg) ? 'flex justify-end' : 'flex justify-start'">
+
+        <!-- Nota interna -->
+        <div v-if="msg.interno"
+          class="w-full max-w-sm rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-2 relative">
+          <span class="absolute -top-2 right-2 bg-amber-500 text-[8px] font-black text-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+            Nota Interna
+          </span>
+          <p class="text-[10px] font-semibold text-amber-400/70 mb-1">{{ msg.autor }}</p>
+          <p class="text-sm text-amber-200">{{ msg.texto }}</p>
+          <p class="text-[9px] text-amber-500/40 mt-1 font-mono">{{ formatTime(msg.timestamp) }}</p>
+        </div>
+
+        <!-- Mensaje propio -->
+        <div v-else-if="esPropio(msg)"
+          class="max-w-xs px-4 py-2.5 rounded-2xl rounded-tr-sm bg-blue-600 text-white">
+          <p class="text-[10px] font-semibold opacity-60 mb-1">{{ msg.autor }}</p>
+          <p class="text-sm leading-relaxed">{{ msg.texto }}</p>
+          <p class="text-[9px] opacity-40 mt-1 font-mono text-right">{{ formatTime(msg.timestamp) }}</p>
+        </div>
+
+        <!-- Mensaje ajeno -->
+        <div v-else
+          class="max-w-xs px-4 py-2.5 rounded-2xl rounded-tl-sm border"
+          :class="settingsStore.isDark
+            ? 'bg-slate-800 border-slate-700 text-white'
+            : 'bg-slate-50 border-slate-200 text-slate-900'">
+          <p class="text-[10px] font-semibold opacity-60 mb-1">
+            {{ msg.autor }}
+            <span class="opacity-40 uppercase tracking-widest text-[8px] ml-1">/ {{ roleLabel(msg.autorRol) }}</span>
+          </p>
+          <p class="text-sm leading-relaxed">{{ msg.texto }}</p>
+          <p class="text-[9px] opacity-30 mt-1 font-mono">{{ formatTime(msg.timestamp) }}</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Input area -->
+    <div class="space-y-2 flex-shrink-0">
+
+      <!-- Toggle nota interna -->
+      <div v-if="authStore.isAdmin || authStore.isOperador" class="flex items-center gap-2 px-1">
+        <button @click="isInternalMode = !isInternalMode"
+          class="flex items-center gap-2 group">
+          <div class="w-7 h-3.5 rounded-full relative transition-all"
+            :class="isInternalMode
+              ? 'bg-amber-500'
+              : settingsStore.isDark ? 'bg-slate-700' : 'bg-slate-200'">
+            <div class="absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white transition-all shadow-sm"
+              :class="isInternalMode ? 'left-[calc(100%-0.75rem)]' : 'left-0.5'"></div>
+          </div>
+          <span class="text-[10px] font-black uppercase tracking-widest transition-colors"
+            :class="isInternalMode
+              ? 'text-amber-400'
+              : settingsStore.isDark ? 'text-slate-600' : 'text-slate-400'">
+            Nota Interna
+          </span>
+        </button>
+      </div>
+
+      <!-- Input -->
+      <div class="flex gap-2">
+        <input v-model="newMessage" @keyup.enter="sendMessage"
+          :placeholder="isInternalMode ? 'Nota interna...' : 'Escribe un mensaje...'"
+          class="flex-1 border px-4 py-3 rounded-xl text-sm outline-none transition-all font-medium"
+          :class="settingsStore.isDark
+            ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-600 focus:border-blue-500'
+            : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-blue-400'" />
+        <button @click="sendMessage" :disabled="!newMessage.trim()"
+          class="px-5 py-2 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+          :class="isInternalMode ? 'bg-amber-500 hover:bg-amber-400' : 'bg-blue-600 hover:bg-blue-500'">
+          {{ isInternalMode ? 'Nota' : 'Enviar' }}
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -81,119 +100,81 @@ import { ref, watch, nextTick } from 'vue';
 import { MessageSquareIcon } from 'lucide-vue-next';
 import { useTicketsStore } from '../store/tickets';
 import { useAuthStore } from '../store/auth';
+import { useSettingsStore } from '../store/settings';
 
-const props = defineProps({
- ticketId: String
-});
+const props = defineProps({ ticketId: String });
 
-const ticketsStore = useTicketsStore();
-const authStore = useAuthStore();
+const ticketsStore   = useTicketsStore();
+const authStore      = useAuthStore();
+const settingsStore  = useSettingsStore();
 
-const messages = ref([]);
-const newMessage = ref('');
-const isInternalMode = ref(false);
+const messages          = ref([]);
+const newMessage        = ref('');
+const isInternalMode    = ref(false);
 const messagesContainer = ref(null);
 
 const formatTime = (timestamp) => {
- if (!timestamp) return '';
- const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
- if (isNaN(date)) return '';
- try {
- return new Intl.DateTimeFormat('es-AR', {
- hour: '2-digit',
- minute: '2-digit',
- timeZone: 'America/Argentina/Buenos_Aires'
- }).format(date);
- } catch (e) {
- return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
- }
+  if (!timestamp) return '';
+  try {
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('es-AR', {
+      hour: '2-digit', minute: '2-digit',
+      day: '2-digit', month: '2-digit',
+      timeZone: 'America/Argentina/Buenos_Aires'
+    }).format(date);
+  } catch { return ''; }
 };
 
 const roleLabel = (r) => {
- if (r === null || r === undefined) return '';
- const n = typeof r === 'string' ? parseInt(r, 10) : r;
- return n === 2 ? 'Administrador' : n === 1 ? 'Operador' : 'Usuario';
+  if (r === null || r === undefined) return '';
+  const n = typeof r === 'string' ? parseInt(r, 10) : r;
+  return n === 2 ? 'Admin' : n === 1 ? 'Operador' : 'Usuario';
 };
 
-// whenever ticketId changes, load comments from backend
-watch(
- () => props.ticketId,
- async (id) => {
- if (id) {
-  await ticketsStore.fetchComments(id);
-  messages.value = ticketsStore.comments.map(c => {
-    return {
-      id: c.id,
-      rol: c.interno ? 'operador' : 'usuario',
-      autor: c.autor || 'Sistema',
-      autorRol: c.autorRol ?? c.rol ?? c.Rol ?? null,
-      texto: c.mensaje,
-      timestamp: c.fecha ? new Date(c.fecha).getTime() : Date.now()
-    };
-  });
+const esPropio = (msg) => msg.autorId === authStore.user?.id;
+
+const mapComments = (comments) => comments.map(c => ({
+  id: c.id,
+  autorId: c.autorId,
+  autor: c.autor || 'Sistema',
+  autorRol: c.autorRol ?? c.rol ?? null,
+  texto: c.mensaje,
+  interno: c.interno,
+  timestamp: c.fecha ?? null
+}));
+
+watch(() => props.ticketId, async (id) => {
+  if (id) {
+    await ticketsStore.fetchComments(id);
+    messages.value = mapComments(ticketsStore.comments);
   } else {
- messages.value = [];
- }
- },
- { immediate: true }
-);
-
-// keep messages synced if store updates (e.g. other components added comments)
-watch(
- () => ticketsStore.comments,
- (newComments) => {
- if (props.ticketId) {
-  messages.value = newComments.map(c => {
-    return {
-      id: c.id,
-      rol: c.interno ? 'operador' : 'usuario',
-      autor: c.autor || 'Sistema',
-      autorRol: c.autorRol ?? c.rol ?? c.Rol ?? null,
-      texto: c.mensaje,
-      timestamp: c.fecha ? new Date(c.fecha).getTime() : Date.now()
-    };
-  });
+    messages.value = [];
   }
-  },
- { deep: true }
-);
+}, { immediate: true });
 
-// auto-scroll when messages update
+watch(() => ticketsStore.comments, (c) => {
+  if (props.ticketId) messages.value = mapComments(c);
+}, { deep: true });
+
 watch(messages, () => {
- nextTick(() => {
- if (messagesContainer.value) {
- messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
- }
- });
+  nextTick(() => {
+    if (messagesContainer.value)
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+  });
 });
 
-
 const sendMessage = async () => {
- if (!newMessage.value.trim() || !props.ticketId) return;
- const texto = newMessage.value.trim();
-  const interno = isInternalMode.value;
+  if (!newMessage.value.trim() || !props.ticketId) return;
   try {
-  await ticketsStore.addComment(props.ticketId, { mensaje: texto, interno });
-  // store watcher will update messages automatically
- } catch (err) {
- console.error('Failed to send chat message', err);
- }
- newMessage.value = '';
+    await ticketsStore.addComment(props.ticketId, { mensaje: newMessage.value.trim(), interno: isInternalMode.value });
+  } catch (e) { console.error(e); }
+  newMessage.value = '';
 };
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar {
- width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
- background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
- background: rgba(255, 255, 255, 0.1);
- border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
- background: rgba(100, 100, 100, 0.4);
-}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(100,100,100,0.2); border-radius: 10px; }
 </style>
