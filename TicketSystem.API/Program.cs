@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using TicketSystem.API.Hubs;
 using TicketSystem.API.Middleware;
 using TicketSystem.Aplicacion.Interfaces;
 using TicketSystem.Aplicacion.Servicios;
@@ -51,13 +52,19 @@ try
         {
             if (builder.Environment.IsDevelopment() && allowedOrigins.Length == 0)
             {
-                policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                policy
+                    .SetIsOriginAllowed(_ => true)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             }
             else
             {
-                policy.WithOrigins(allowedOrigins)
-                      .AllowAnyHeader()
-                      .AllowAnyMethod();
+                policy
+                    .WithOrigins(allowedOrigins)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             }
         });
     });
@@ -88,6 +95,9 @@ try
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 
+    // ─── SIGNALR ──────────────────────────────────────────────────────────────────
+    builder.Services.AddSignalR();
+
     // ─── JWT ──────────────────────────────────────────────────────────────────────
     var jwtSection = builder.Configuration.GetSection("Jwt");
     var jwtKey = jwtSection["Key"]
@@ -97,13 +107,13 @@ try
         throw new InvalidOperationException($"JWT Key must be at least 32 characters. Current: {jwtKey.Length}");
 
     var key = Encoding.UTF8.GetBytes(jwtKey);
-    var jwtIssuer = jwtSection["Issuer"] ?? "TicketSystemAPI";
-    var jwtAudience = jwtSection["Audience"] ?? "TicketSystemFrontend";
+    var jwtIssuer    = jwtSection["Issuer"]   ?? "TicketSystemAPI";
+    var jwtAudience  = jwtSection["Audience"] ?? "TicketSystemFrontend";
 
     builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme    = JwtBearerDefaults.AuthenticationScheme;
     })
     .AddJwtBearer(options =>
     {
@@ -111,15 +121,29 @@ try
         options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidIssuer = jwtIssuer,
-            ValidateAudience = true,
-            ValidAudience = jwtAudience,
-            ValidateLifetime = true,
+            ValidateIssuer           = true,
+            ValidIssuer              = jwtIssuer,
+            ValidateAudience         = true,
+            ValidAudience            = jwtAudience,
+            ValidateLifetime         = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(key),
-            RoleClaimType = ClaimTypes.Role,
-            ClockSkew = TimeSpan.Zero
+            IssuerSigningKey         = new SymmetricSecurityKey(key),
+            RoleClaimType            = ClaimTypes.Role,
+            ClockSkew                = TimeSpan.Zero
+        };
+        // SignalR envía el token como query param ?access_token=
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -146,18 +170,18 @@ try
     {
         options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
         {
-            Title = "TicketSystem API",
-            Version = "v1",
+            Title       = "TicketSystem API",
+            Version     = "v1",
             Description = "Sistema de tickets de soporte técnico"
         });
 
         options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
         {
-            Name = "Authorization",
-            Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-            Scheme = "bearer",
+            Name        = "Authorization",
+            Type        = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+            Scheme      = "bearer",
             BearerFormat = "JWT",
-            In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            In          = Microsoft.OpenApi.Models.ParameterLocation.Header,
             Description = "Ingrese SOLO el token JWT"
         });
 
@@ -169,7 +193,7 @@ try
                     Reference = new Microsoft.OpenApi.Models.OpenApiReference
                     {
                         Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                        Id = "Bearer"
+                        Id   = "Bearer"
                     }
                 },
                 Array.Empty<string>()
@@ -189,6 +213,7 @@ try
         app.UseSwaggerUI();
     }
 
+    app.UseStaticFiles();
     app.UseHttpsRedirection();
     app.UseCors("AllowFrontend");
     app.UseRateLimiter();
@@ -197,11 +222,12 @@ try
 
     app.MapHealthChecks("/health");
     app.MapControllers();
+    app.MapHub<TicketHub>("/hubs/tickets");
 
     // ─── DATABASE MIGRATION & SEED ───────────────────────────────────────────────
     using (var scope = app.Services.CreateScope())
     {
-        var context = scope.ServiceProvider.GetRequiredService<TicketSystemDbContext>();
+        var context        = scope.ServiceProvider.GetRequiredService<TicketSystemDbContext>();
         var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<Usuario>>();
 
         await context.Database.MigrateAsync();

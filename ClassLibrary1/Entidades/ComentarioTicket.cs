@@ -16,5 +16,8 @@ namespace TicketSystem.Dominio.Entidades
         public bool EsInterno { get; set; }
 
         public DateTime FechaCreacion { get; set; }
+        
+        public ICollection<ArchivoAdjunto> Adjuntos { get; set; } = new List<ArchivoAdjunto>();
+
     }
 }

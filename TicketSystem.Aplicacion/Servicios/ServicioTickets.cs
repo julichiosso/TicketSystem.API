@@ -206,14 +206,22 @@ namespace TicketSystem.Aplicacion.Servicios
 
             return comentarios.Select(c => new ComentarioTicketDto
             {
-                Id = c.Id,
+                Id       = c.Id,
                 TicketId = c.TicketId,
-                AutorId = c.AutorId,
-                Autor = c.Autor?.Nombre ?? "Sistema",
-                Rol = (int)(c.Autor?.Rol ?? RolUsuario.Usuario),
-                Mensaje = c.Mensaje,
-                Interno = c.EsInterno,
-                Fecha = c.FechaCreacion
+                AutorId  = c.AutorId,
+                Autor    = c.Autor?.Nombre ?? "Sistema",
+                Rol      = (int)(c.Autor?.Rol ?? RolUsuario.Usuario),
+                Mensaje  = c.Mensaje,
+                Interno  = c.EsInterno,
+                Fecha    = c.FechaCreacion,
+                Adjuntos = c.Adjuntos.Select(a => new AdjuntoDto
+                {
+                    Id             = a.Id,
+                    NombreOriginal = a.NombreOriginal,
+                    ContentType    = a.ContentType,
+                    TamañoBytes    = a.TamañoBytes,
+                    Url            = $"/uploads/{a.NombreAlmacenado}"
+                }).ToList()
             });
         }
 

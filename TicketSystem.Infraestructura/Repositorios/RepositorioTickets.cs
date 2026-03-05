@@ -115,8 +115,8 @@ public class RepositorioTickets : IRepositorioTickets
     {
         var query = _context.ComentariosTicket
             .Include(c => c.Autor)
+            .Include(c => c.Adjuntos)   //agregar esto
             .Where(c => c.TicketId == ticketId);
-
         if (!incluirInternos)
             query = query.Where(c => !c.EsInterno);
 

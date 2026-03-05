@@ -12,5 +12,8 @@ namespace TicketSystem.Aplicacion.DTOs
         public string Mensaje { get; set; } = string.Empty;
         public bool Interno { get; set; }
         public DateTime Fecha { get; set; }
+
+        public List<AdjuntoDto> Adjuntos { get; set; } = new();
+
     }
 }

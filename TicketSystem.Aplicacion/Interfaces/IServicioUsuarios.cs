@@ -8,5 +8,6 @@ namespace TicketSystem.Aplicacion.Interfaces
         Task<IEnumerable<UsuarioDto>> ObtenerTodosAsync();
         Task<UsuarioDto?> ObtenerPorIdAsync(Guid id);
         Task EliminarAsync(Guid id);
+        Task CambiarPasswordAsync(Guid usuarioId, CambiarPasswordDto dto);
     }
 }

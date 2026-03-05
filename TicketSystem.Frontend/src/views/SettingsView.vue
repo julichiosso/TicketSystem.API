@@ -95,55 +95,6 @@
           </div>
         </section>
 
-        <!-- ── COLOR DE ACENTO ── -->
-        <section class="rounded-2xl p-6 border transition-colors"
-          :class="settingsStore.isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'">
-          <div class="flex items-center gap-3 mb-6">
-            <PaletteIcon class="w-5 h-5 text-blue-500" />
-            <h3 class="text-sm font-black uppercase tracking-widest">Color de Acento</h3>
-          </div>
-
-          <div class="flex gap-3">
-            <button v-for="c in colorOptions" :key="c.key"
-              @click="settingsStore.setThemeColor(c.key)"
-              class="flex-1 h-12 rounded-xl border-2 transition-all relative overflow-hidden"
-              :class="settingsStore.themeColor === c.key
-                ? 'border-white scale-105 shadow-lg'
-                : 'border-transparent opacity-60 hover:opacity-90 hover:scale-105'"
-              :style="`background: linear-gradient(135deg, ${c.from}, ${c.to})`">
-              <div v-if="settingsStore.themeColor === c.key"
-                class="absolute inset-0 flex items-center justify-center">
-                <CheckIcon class="w-4 h-4 text-white drop-shadow" />
-              </div>
-              <span class="absolute bottom-1 w-full text-center text-[8px] font-black uppercase tracking-widest text-white/70">
-                {{ c.label }}
-              </span>
-            </button>
-          </div>
-        </section>
-
-        <!-- ── DENSIDAD ── -->
-        <section class="rounded-2xl p-6 border transition-colors"
-          :class="settingsStore.isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'">
-          <div class="flex items-center gap-3 mb-6">
-            <LayersIcon class="w-5 h-5 text-blue-500" />
-            <h3 class="text-sm font-black uppercase tracking-widest">Densidad de Interfaz</h3>
-          </div>
-          <div class="flex gap-3">
-            <button v-for="d in densityOptions" :key="d.key"
-              @click="settingsStore.setUIDensity(d.key)"
-              class="flex-1 py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all border-2 flex flex-col items-center gap-2"
-              :class="settingsStore.uiDensity === d.key
-                ? 'bg-blue-500 border-blue-500 text-white shadow-md shadow-blue-500/20'
-                : settingsStore.isDark
-                  ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
-                  : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'">
-              <component :is="d.icon" class="w-4 h-4" />
-              {{ d.label }}
-            </button>
-          </div>
-        </section>
-
         <!-- ── SISTEMA ── -->
         <section class="rounded-2xl p-6 border transition-colors"
           :class="settingsStore.isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'">
@@ -195,36 +146,117 @@
           </div>
         </section>
 
+        <!-- ── SEGURIDAD ── -->
+        <section class="rounded-2xl p-6 border transition-colors"
+          :class="settingsStore.isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'">
+          <div class="flex items-center gap-3 mb-6">
+            <ShieldIcon class="w-5 h-5 text-blue-500" />
+            <h3 class="text-sm font-black uppercase tracking-widest">Seguridad</h3>
+          </div>
+        
+          <div class="space-y-4">
+            <div v-for="field in passwordFields" :key="field.key" class="relative group">
+              <label class="absolute -top-2.5 left-4 px-2 text-[9px] font-black uppercase tracking-widest z-10"
+                :class="settingsStore.isDark ? 'bg-slate-900 text-slate-500' : 'bg-white text-slate-400'">
+                {{ field.label }}
+              </label>
+              <div class="relative">
+                <input
+                  v-model="field.value"
+                  :type="field.show ? 'text' : 'password'"
+                  class="w-full border-2 px-4 py-3 rounded-xl outline-none transition-all font-medium text-sm"
+                  :class="settingsStore.isDark
+                    ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-600 focus:border-blue-500'
+                    : 'bg-white border-slate-200 text-slate-900 focus:border-blue-500'"
+                  :placeholder="field.placeholder" />
+                <button type="button" @click="field.show = !field.show"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                  :class="settingsStore.isDark ? 'text-slate-600 hover:text-slate-400' : 'text-slate-400 hover:text-slate-600'">
+                  <EyeOffIcon v-if="field.show" class="w-4 h-4" />
+                  <EyeIcon v-else class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          
+            <!-- Error / Success -->
+            <p v-if="passwordError" class="text-rose-500 text-xs font-medium flex items-center gap-1">
+              <AlertCircleIcon class="w-3.5 h-3.5" /> {{ passwordError }}
+            </p>
+            <p v-if="passwordSuccess" class="text-emerald-500 text-xs font-medium flex items-center gap-1">
+              <CheckCircleIcon class="w-3.5 h-3.5" /> {{ passwordSuccess }}
+            </p>
+          
+            <button @click="cambiarPassword" :disabled="savingPassword"
+              class="w-full py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-all disabled:opacity-50"
+              :class="settingsStore.isDark
+                ? 'bg-blue-600 hover:bg-blue-500 text-white'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'">
+              {{ savingPassword ? 'Guardando...' : 'Actualizar Contraseña' }}
+            </button>
+          </div>
+        </section>
+
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import {
-  ArrowLeftIcon, PaletteIcon, LayersIcon, Settings2Icon,
+  ArrowLeftIcon, Settings2Icon,
   SunIcon, MoonIcon, SunMoonIcon, CheckIcon,
-  AlignJustifyIcon, AlignCenterIcon
+  ShieldIcon, EyeIcon, EyeOffIcon,
+  AlertCircleIcon, CheckCircleIcon
 } from 'lucide-vue-next';
+import axios from 'axios';
 import { useSettingsStore } from '../store/settings';
+import { API_URL } from '../store/auth';
 
 const router = useRouter();
 const settingsStore = useSettingsStore();
 
-const colorOptions = [
-  { key: 'blue',    label: 'Azul',      from: '#3b82f6', to: '#1d4ed8' },
-  { key: 'indigo',  label: 'Índigo',    from: '#6366f1', to: '#4338ca' },
- // { key: 'emerald', label: 'Esmeralda', from: '#10b981', to: '#047857' },
- // { key: 'rose',    label: 'Rosa',      from: '#f43f5e', to: '#be123c' },
-  { key: 'violet',  label: 'Violeta',   from: '#8b5cf6', to: '#6d28d9' },
-];
+//
+const savingPassword  = ref(false);
+const passwordError   = ref('');
+const passwordSuccess = ref('');
 
+const passwordFields = ref([
+  { key: 'actual',    label: 'Contraseña Actual',    value: '', show: false, placeholder: '••••••••' },
+  { key: 'nueva',     label: 'Contraseña Nueva',     value: '', show: false, placeholder: 'Mínimo 6 caracteres' },
+  { key: 'confirmar', label: 'Confirmar Contraseña', value: '', show: false, placeholder: 'Repetí la nueva contraseña' },
+]);
 
+const cambiarPassword = async () => {
+  passwordError.value   = '';
+  passwordSuccess.value = '';
 
+  const [actual, nueva, confirmar] = passwordFields.value.map(f => f.value);
 
-const densityOptions = [
-  { key: 'comfortable', label: 'Cómoda',   icon: AlignJustifyIcon },
-  { key: 'compact',     label: 'Compacta', icon: AlignCenterIcon  },
-];
+  if (!actual || !nueva || !confirmar) {
+    passwordError.value = 'Completá todos los campos.'; return;
+  }
+  if (nueva.length < 6) {
+    passwordError.value = 'La contraseña nueva debe tener al menos 6 caracteres.'; return;
+  }
+  if (nueva !== confirmar) {
+    passwordError.value = 'Las contraseñas no coinciden.'; return;
+  }
+
+  savingPassword.value = true;
+  try {
+    await axios.put(`${API_URL}/usuarios/cambiar-password`, {
+      passwordActual:    actual,
+      passwordNueva:     nueva,
+      confirmarPassword: confirmar,
+    });
+    passwordSuccess.value = '¡Contraseña actualizada correctamente!';
+    passwordFields.value.forEach(f => { f.value = ''; f.show = false; });
+  } catch (err) {
+    passwordError.value = err.response?.data?.message ?? 'Error al actualizar la contraseña.';
+  } finally {
+    savingPassword.value = false;
+  }
+};
 </script>

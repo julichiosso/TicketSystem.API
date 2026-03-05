@@ -211,14 +211,16 @@ const timeline = computed(() => {
   ];
 });
 
-const formatDate = (value) => {
+function formatDate(value) {
   if (!value) return '---';
-  const date = new Date(value);
+  const str = value.toString();
+  const normalized = str.endsWith('Z') || str.includes('+') ? str : str + 'Z';
+  const date = new Date(normalized);
   if (isNaN(date)) return '---';
   return date.toLocaleString('es-AR', {
     timeZone: 'America/Argentina/Buenos_Aires',
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit'
   });
-};
+}
 </script>

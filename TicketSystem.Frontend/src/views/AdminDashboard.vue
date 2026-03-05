@@ -16,7 +16,6 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-4">
-          <!-- Tabs -->
           <div class="p-1 rounded-xl border flex flex-wrap gap-1"
             :class="settingsStore.isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'">
             <button v-for="tab in tabs" :key="tab.key" @click="activeTab = tab.key"
@@ -54,28 +53,30 @@
 
       <!-- Dashboard Tab -->
       <section v-if="activeTab === 'dashboard'" class="space-y-4">
-        <div class="flex items-center justify-between">
-          <div class="grid md:grid-cols-5 gap-3 flex-1">
-            <div v-for="metric in metrics" :key="metric.label"
-              class="rounded-xl p-4 border transition-all hover:scale-[1.02]"
-              :class="settingsStore.isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-sm'">
-              <div class="text-[10px] font-semibold uppercase tracking-wider mb-1"
-                :class="settingsStore.isDark ? 'text-slate-500' : 'text-slate-400'">{{ metric.label }}</div>
-              <div class="text-xl font-bold">{{ metric.value }}</div>
-            </div>
-          </div>
-          <div class="text-[10px] font-semibold uppercase tracking-widest pl-4"
-            :class="settingsStore.isDark ? 'text-slate-600' : 'text-slate-400'">
-            Total: {{ filteredTickets.length }}
+
+        <!-- Métricas -->
+        <div class="grid md:grid-cols-5 gap-3">
+          <div v-for="metric in metrics" :key="metric.label"
+            class="rounded-xl p-4 border transition-all hover:scale-[1.02]"
+            :class="settingsStore.isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 shadow-sm'">
+            <div class="text-[10px] font-semibold uppercase tracking-wider mb-1"
+              :class="settingsStore.isDark ? 'text-slate-500' : 'text-slate-400'">{{ metric.label }}</div>
+            <div class="text-xl font-bold">{{ metric.value }}</div>
           </div>
         </div>
 
-        <div v-if="isLoadingTickets" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+        <!-- Filtros -->
+        <TicketFilters />
+
+        <!-- Tickets -->
+        <div v-if="isLoadingTickets"
+          class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           <TicketCardSkeleton v-for="n in 8" :key="n" />
         </div>
-        <div v-else-if="filteredTickets.length > 0"
+
+        <div v-else-if="pagedTickets.length > 0"
           class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-          <TicketCard v-for="ticket in filteredTickets" :key="ticket.id"
+          <TicketCard v-for="ticket in pagedTickets" :key="ticket.id"
             :ticket="ticket" @click="openDetail(ticket)" class="cursor-pointer">
             <template #actions>
               <div class="flex flex-wrap items-center gap-2">
@@ -107,11 +108,72 @@
             </template>
           </TicketCard>
         </div>
-        <div v-else class="flex flex-col items-center justify-center py-32 border-2 border-dashed rounded-[3rem] transition-colors"
+
+        <div v-else
+          class="flex flex-col items-center justify-center py-32 border-2 border-dashed rounded-[3rem] transition-colors"
           :class="settingsStore.isDark ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white'">
-          <InboxIcon class="w-10 h-10 mb-4" :class="settingsStore.isDark ? 'text-slate-700' : 'text-slate-300'" />
-          <h3 class="text-xl font-black mb-2 uppercase italic">No hay tickets</h3>
+          <InboxIcon class="w-10 h-10 mb-4"
+            :class="settingsStore.isDark ? 'text-slate-700' : 'text-slate-300'" />
+          <h3 class="text-xl font-black mb-2 uppercase italic">
+            {{ ticketsStore.hayFiltrosActivos ? 'Sin resultados' : 'No hay tickets' }}
+          </h3>
+          <button v-if="ticketsStore.hayFiltrosActivos"
+            @click="ticketsStore.clearFiltros()"
+            class="mt-4 text-xs font-black uppercase tracking-widest text-blue-500 hover:text-blue-400 transition-colors">
+            Limpiar filtros
+          </button>
         </div>
+
+        <!-- Paginación -->
+        <div v-if="totalPages > 1"
+          class="flex items-center justify-between pt-4 border-t"
+          :class="settingsStore.isDark ? 'border-slate-800' : 'border-slate-100'">
+
+          <p class="text-xs font-medium"
+            :class="settingsStore.isDark ? 'text-slate-500' : 'text-slate-400'">
+            Mostrando
+            <span class="font-black" :class="settingsStore.isDark ? 'text-white' : 'text-slate-900'">
+              {{ (currentPage - 1) * PAGE_SIZE + 1 }}–{{ Math.min(currentPage * PAGE_SIZE, allAdminTickets.length) }}
+            </span>
+            de
+            <span class="font-black" :class="settingsStore.isDark ? 'text-white' : 'text-slate-900'">
+              {{ allAdminTickets.length }}
+            </span>
+            tickets
+          </p>
+
+          <div class="flex items-center gap-1">
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+              class="p-2 rounded-lg border transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              :class="settingsStore.isDark ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'">
+              <ChevronLeftIcon class="w-4 h-4" />
+            </button>
+            <template v-for="p in visiblePages" :key="p">
+              <span v-if="p === '...'" class="px-2 text-xs"
+                :class="settingsStore.isDark ? 'text-slate-600' : 'text-slate-400'">···</span>
+              <button v-else @click="goToPage(p)"
+                class="w-8 h-8 rounded-lg border text-xs font-black transition-all"
+                :class="p === currentPage
+                  ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+                  : settingsStore.isDark
+                    ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'">
+                {{ p }}
+              </button>
+            </template>
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+              class="p-2 rounded-lg border transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              :class="settingsStore.isDark ? 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'">
+              <ChevronRightIcon class="w-4 h-4" />
+            </button>
+          </div>
+
+          <p class="text-[10px] font-bold uppercase tracking-widest"
+            :class="settingsStore.isDark ? 'text-slate-600' : 'text-slate-400'">
+            Página {{ currentPage }} de {{ totalPages }}
+          </p>
+        </div>
+
       </section>
 
       <!-- Usuarios Tab -->
@@ -137,8 +199,8 @@
               <select v-model="user.rol" @change="changeRole(user)"
                 class="border rounded-lg px-2 py-1 text-sm outline-none transition"
                 :class="settingsStore.isDark
-                  ? 'bg-slate-800 border-slate-700 text-white focus:ring-blue-500/20'
-                  : 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500/20'">
+                  ? 'bg-slate-800 border-slate-700 text-white'
+                  : 'bg-white border-slate-200 text-slate-900'">
                 <option :value="0">Usuario</option>
                 <option :value="1">Operador</option>
                 <option :value="2">Administrador</option>
@@ -168,15 +230,13 @@
                   <span class="text-sm" :class="settingsStore.isDark ? 'text-slate-400' : 'text-slate-500'">{{ label }}</span>
                   <span class="text-sm font-bold text-blue-400">{{ value }}</span>
                 </div>
-                <div class="w-full rounded-full h-2"
-                  :class="settingsStore.isDark ? 'bg-slate-800' : 'bg-slate-100'">
+                <div class="w-full rounded-full h-2" :class="settingsStore.isDark ? 'bg-slate-800' : 'bg-slate-100'">
                   <div class="bg-gradient-to-r from-blue-600 to-indigo-600 h-2 rounded-full transition-all duration-500"
                     :style="{ width: (value / (metrics[0].value || 1) * 100) + '%' }"></div>
                 </div>
               </div>
             </div>
           </div>
-
           <div class="rounded-2xl p-6 border transition-colors"
             :class="settingsStore.isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'">
             <h3 class="text-lg font-black mb-6">Indicadores Clave</h3>
@@ -201,8 +261,7 @@
             <div :class="`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
               entry.type === 'delete' ? 'bg-rose-500' :
               entry.type === 'create' ? 'bg-emerald-500' :
-              entry.type === 'update' ? 'bg-blue-500' : 'bg-slate-500'}`">
-            </div>
+              entry.type === 'update' ? 'bg-blue-500' : 'bg-slate-500'}`"></div>
             <div class="flex-1">
               <div class="text-sm font-semibold">{{ entry.message || entry.detalle }}</div>
               <div class="text-xs mt-1" :class="settingsStore.isDark ? 'text-slate-500' : 'text-slate-400'">
@@ -267,6 +326,7 @@
           </div>
         </div>
       </section>
+
     </main>
 
     <TicketDetailModal v-if="ticketsStore.selectedTicket"
@@ -283,39 +343,81 @@ import { useAuthStore, API_URL } from '../store/auth';
 import { useTicketsStore } from '../store/tickets';
 import { useNotificationStore } from '../store/notifications';
 import { useSettingsStore } from '../store/settings';
-import { SearchIcon, RefreshCcwIcon, InboxIcon } from 'lucide-vue-next';
-import TicketDetailModal from '../components/TicketDetailModal.vue';
-import TicketCard from '../components/TicketCard.vue';
+import {
+  SearchIcon, RefreshCcwIcon, InboxIcon,
+  ChevronLeftIcon, ChevronRightIcon
+} from 'lucide-vue-next';
+import TicketDetailModal  from '../components/TicketDetailModal.vue';
+import TicketCard         from '../components/TicketCard.vue';
 import TicketCardSkeleton from '../components/TicketCardSkeleton.vue';
-import UserCardSkeleton from '../components/UserCardSkeleton.vue';
-import DataExport from '../components/DataExport.vue';
-import Sidebar from '../components/Sidebar.vue';
+import UserCardSkeleton   from '../components/UserCardSkeleton.vue';
+import DataExport         from '../components/DataExport.vue';
+import Sidebar            from '../components/Sidebar.vue';
+import TicketFilters      from '../components/TicketFilters.vue';
 
-const router = useRouter();
-const authStore = useAuthStore();
-const ticketsStore = useTicketsStore();
+const router            = useRouter();
+const authStore         = useAuthStore();
+const ticketsStore      = useTicketsStore();
 const notificationStore = useNotificationStore();
-const settingsStore = useSettingsStore();
+const settingsStore     = useSettingsStore();
 
 const activeTab = ref('dashboard');
 const tabs = [
-  { key: 'dashboard',  label: 'Dashboard' },
-  { key: 'usuarios',   label: 'Usuarios' },
-  { key: 'metricas',   label: 'Métricas' },
-  { key: 'auditoria',  label: 'Auditoría' },
-  { key: 'config',     label: 'Configuración' },
+  { key: 'dashboard', label: 'Dashboard' },
+  { key: 'usuarios',  label: 'Usuarios' },
+  { key: 'metricas',  label: 'Métricas' },
+  { key: 'auditoria', label: 'Auditoría' },
+  { key: 'config',    label: 'Configuración' },
 ];
 
-const users = ref([]);
-const operators = ref([]);
+const users         = ref([]);
+const operators     = ref([]);
 const originalRoles = ref({});
-const auditLog = ref([{ id: 1, message: 'Sistema inicializado.', type: 'system', timestamp: Date.now() }]);
-const brand = ref('TicketSystem Enterprise');
+const auditLog      = ref([{ id: 1, message: 'Sistema inicializado.', type: 'system', timestamp: Date.now() }]);
 const isLoadingTickets = ref(false);
-const isLoadingUsers = ref(false);
-const ticketsSearch = ref('');
-const usersSearch = ref('');
+const isLoadingUsers   = ref(false);
+const ticketsSearch    = ref('');
+const usersSearch      = ref('');
 
+// ── Paginación ────────────────────────────────────────────────────────────
+const currentPage = ref(1);
+const PAGE_SIZE   = 12;
+
+const allAdminTickets = computed(() => {
+  if (!ticketsSearch.value) return ticketsStore.tickets;
+  const q = ticketsSearch.value.toLowerCase();
+  return ticketsStore.tickets.filter(t =>
+    t.titulo?.toLowerCase().includes(q) ||
+    t.usuarioNombre?.toLowerCase().includes(q)
+  );
+});
+
+const totalPages = computed(() => Math.ceil(allAdminTickets.value.length / PAGE_SIZE) || 1);
+
+const pagedTickets = computed(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE;
+  return allAdminTickets.value.slice(start, start + PAGE_SIZE);
+});
+
+const visiblePages = computed(() => {
+  const total = totalPages.value, current = currentPage.value;
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages = [1];
+  if (current > 3) pages.push('...');
+  for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
+  if (current < total - 2) pages.push('...');
+  pages.push(total);
+  return pages;
+});
+
+const goToPage = (p) => {
+  if (p < 1 || p > totalPages.value) return;
+  currentPage.value = p;
+};
+
+watch(ticketsSearch, () => { currentPage.value = 1; });
+
+// ── Config ────────────────────────────────────────────────────────────────
 const configFields = ref([
   { label: 'Nombre de Marca',      value: 'TicketSystem Enterprise', type: 'text',   placeholder: 'Nombre de marca' },
   { label: 'Email de Soporte',     value: '',                        type: 'email',  placeholder: 'support@example.com' },
@@ -344,20 +446,16 @@ const kpis = computed(() => [
 ]);
 
 const stateDistribution = computed(() => realMetrics.value.distribucionPorEstado);
-const filteredTickets = computed(() => {
-  if (!ticketsSearch.value) return ticketsStore.tickets;
-  return ticketsStore.tickets.filter(t =>
-    t.titulo?.toLowerCase().includes(ticketsSearch.value.toLowerCase()) ||
-    t.usuarioNombre?.toLowerCase().includes(ticketsSearch.value.toLowerCase())
-  );
-});
+
 const filteredUsers = computed(() => {
   if (!usersSearch.value) return users.value;
   const q = usersSearch.value.toLowerCase();
   return users.value.filter(u => u.nombre?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q));
 });
+
 const dirtyUsers = computed(() => users.value.filter(u => u._dirty));
 
+// ── Fetch ─────────────────────────────────────────────────────────────────
 const fetchTickets = async () => {
   isLoadingTickets.value = true;
   try { await ticketsStore.fetchAll(); }
@@ -387,9 +485,9 @@ const fetchAuditLogs = async () => {
   try {
     const res = await axios.get(`${API_URL}/auditoria`);
     auditLog.value = (res.data?.data || []).map(l => ({
-      id: l.id || l.Id,
-      message: l.detalle || l.Detalle,
-      type: (l.accion || 'update').toLowerCase(),
+      id:        l.id || l.Id,
+      message:   l.detalle || l.Detalle,
+      type:      (l.accion || 'update').toLowerCase(),
       timestamp: l.fecha || l.Fecha
     }));
   } catch (e) { console.error(e); }
@@ -404,7 +502,17 @@ const fetchOperators = async () => {
   } catch (e) { console.error(e); }
 };
 
-const updateStatus   = async (id, s) => { await ticketsStore.updateStatus(id, s); addAudit(`Ticket ${id} → estado ${s}`, 'update'); };
+// ── Acciones ──────────────────────────────────────────────────────────────
+const updateStatus = async (id, s) => {
+  try {
+    await ticketsStore.updateStatus(id, s);
+    const labels = { 1: 'En Proceso', 2: 'Resuelto', 4: 'En Espera' };
+    notificationStore.success(`Ticket → ${labels[s]}`);
+    addAudit(`Ticket cambió a estado ${labels[s]}`, 'update');
+  } catch {
+    notificationStore.error('No se pudo cambiar el estado.');
+  }
+};
 const removeTicket   = async (id)    => { await ticketsStore.deleteTicket(id); addAudit(`Ticket ${id} eliminado`, 'delete'); };
 const openDetail     = async (t)     => { ticketsStore.selectTicket(t); await ticketsStore.fetchComments(t.id); };
 const assignOperator = async (id, e) => {
@@ -425,34 +533,44 @@ const applyChanges = async () => {
     notificationStore.success('Cambios aplicados.');
   } catch { notificationStore.error('No se pudieron aplicar los cambios.'); }
 };
-const saveBrandSettings = async () => {
-  notificationStore.info('Guardando...');
-  await new Promise(r => setTimeout(r, 1000));
-  notificationStore.success('Configuración guardada.');
-};
+const saveBrandSettings  = async () => { notificationStore.info('Guardando...'); await new Promise(r => setTimeout(r, 1000)); notificationStore.success('Configuración guardada.'); };
 const clearAuditLog      = () => { if (confirm('¿Limpiar auditoría?')) { auditLog.value = []; notificationStore.success('Auditoría limpiada.'); } };
 const resetSystemConfirm = () => { if (prompt('Escribe "CONFIRMAR":') === 'CONFIRMAR') { ticketsStore.tickets = []; users.value = []; auditLog.value = []; notificationStore.success('Sistema reseteado.'); } };
 const viewSystemLogs     = () => { console.log('Logs:', { tickets: ticketsStore.tickets.length, users: users.value.length }); notificationStore.info('Logs en consola.'); };
 const syncDatabase       = () => { notificationStore.info('Sincronizando...'); setTimeout(() => notificationStore.success('BD sincronizada.'), 1500); };
-const formatTime         = (ts) => new Date(ts).toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
-const addAudit           = (msg, type = 'update') => { auditLog.value.unshift({ id: Date.now(), message: msg, type, timestamp: Date.now() }); if (auditLog.value.length > 50) auditLog.value.pop(); };
+const formatTime         = (ts) => {
+  const str = ts?.toString() ?? '';
+  const normalized = str.endsWith('Z') || str.includes('+') ? str : str + 'Z';
+  return new Date(normalized).toLocaleString('es-AR', {
+    timeZone: 'America/Argentina/Buenos_Aires',
+    hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit'
+  });
+};
+const addAudit = (msg, type = 'update') => {
+  auditLog.value.unshift({ id: Date.now(), message: msg, type, timestamp: Date.now() });
+  if (auditLog.value.length > 50) auditLog.value.pop();
+};
 
+// ── Lifecycle ─────────────────────────────────────────────────────────────
 onMounted(async () => {
   if (!authStore.isAdmin) { router.replace('/dashboard'); return; }
   await Promise.all([fetchTickets(), fetchUsers(), fetchOperators(), fetchMetrics(), fetchAuditLogs()]);
   const onKey = (e) => {
-    if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
     if (e.key === '1') activeTab.value = 'dashboard';
     if (e.key === '2') activeTab.value = 'usuarios';
     if (e.key === '3') activeTab.value = 'metricas';
     if (e.key === '4') activeTab.value = 'auditoria';
     if (e.key === '5') activeTab.value = 'config';
+    if (e.key === 'ArrowRight') goToPage(currentPage.value + 1);
+    if (e.key === 'ArrowLeft')  goToPage(currentPage.value - 1);
   };
   window.addEventListener('keydown', onKey);
   onUnmounted(() => window.removeEventListener('keydown', onKey));
 });
 
 watch(activeTab, (v) => {
+  currentPage.value = 1;
   if (v === 'dashboard') fetchTickets();
   if (v === 'usuarios')  fetchUsers();
   if (v === 'metricas')  fetchMetrics();
