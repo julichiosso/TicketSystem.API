@@ -10,6 +10,7 @@ namespace TicketSystem.Dominio.Enumeraciones
     {
         Baja,
         Media,
-        Alta
+        Alta,
+        Critica
     }
 }

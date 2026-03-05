@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <ProjectReference Include="..\ClassLibrary1\TicketSystem.Dominio.csproj" />
+    <ProjectReference Include="..\TicketSystem.Dominio\TicketSystem.Dominio.csproj" />
   </ItemGroup>
 
 </Project>

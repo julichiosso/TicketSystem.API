@@ -1,0 +1,39 @@
+name: CI - Build & Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build & Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restaurar dependencias
+        run: dotnet restore TicketSystem.Dominio.sln
+
+      - name: Compilar solución
+        run: dotnet build TicketSystem.Dominio.sln --no-restore --configuration Release
+
+      - name: Correr tests
+        run: dotnet test TicketSystem.Tests/TicketSystem.Tests.csproj --no-build --configuration Release --verbosity normal
+
+      - name: Publicar resultado de tests
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: xUnit Tests
+          path: '**/TestResults/*.xml'
+          reporter: dotnet-trx
+          fail-on-error: true

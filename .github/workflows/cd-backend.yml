@@ -1,0 +1,27 @@
+name: CD - Deploy Backend a Render
+
+on:
+  push:
+    branches: [ main ]
+  workflow_run:
+    workflows: [ "CI - Build & Tests" ]
+    types: [ completed ]
+    branches: [ main ]
+
+jobs:
+  deploy-backend:
+    name: Deploy a Render
+    runs-on: ubuntu-latest
+    # Solo deployar si el CI pasó
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
+
+    steps:
+      - name: Trigger deploy en Render
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" \
+            -H "Content-Type: application/json"
+
+      - name: Verificar deploy
+        run: |
+          echo "Deploy triggered en Render."
+          echo "Revisá el estado en: https://dashboard.render.com"

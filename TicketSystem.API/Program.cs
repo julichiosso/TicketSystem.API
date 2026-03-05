@@ -19,6 +19,7 @@ using TicketSystem.Dominio.Entidades;
 using TicketSystem.Infraestructura.Datos;
 using TicketSystem.Infraestructura.Repositorios;
 using TicketSystem.Infraestructura.Seed;
+using TicketSystem.Infraestructura.Servicios;
 
 // ─── SERILOG ──────────────────────────────────────────────────────────────────
 Log.Logger = new LoggerConfiguration()
@@ -86,12 +87,15 @@ try
         options.UseSqlite(
             builder.Configuration.GetConnectionString("DefaultConnection")));
 
-    // ─── REPOSITORIES & SERVICES ─────────────────────────────────────────────────
+    // ─── REPOSITORIES ────────────────────────────────────────────────────────────
     builder.Services.AddScoped<IRepositorioTickets, RepositorioTickets>();
     builder.Services.AddScoped<IRepositorioUsuarios, RepositorioUsuarios>();
+
+    // ─── SERVICES ────────────────────────────────────────────────────────────────
     builder.Services.AddScoped<IServicioTickets, ServicioTickets>();
     builder.Services.AddScoped<IServicioUsuarios, ServicioUsuarios>();
-    builder.Services.AddScoped<IServicioEmail, TicketSystem.Infraestructura.Servicios.ServicioEmail>();
+    builder.Services.AddScoped<IServicioEmail, ServicioEmail>();
+    builder.Services.AddScoped<IServicioNotificaciones, ServicioNotificaciones>(); // ← NUEVO
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 
@@ -99,16 +103,16 @@ try
     builder.Services.AddSignalR();
 
     // ─── JWT ──────────────────────────────────────────────────────────────────────
-    var jwtSection = builder.Configuration.GetSection("Jwt");
-    var jwtKey = jwtSection["Key"]
+    var jwtSection  = builder.Configuration.GetSection("Jwt");
+    var jwtKey      = jwtSection["Key"]
         ?? throw new InvalidOperationException("JWT Key is not configured.");
 
     if (jwtKey.Length < 32)
         throw new InvalidOperationException($"JWT Key must be at least 32 characters. Current: {jwtKey.Length}");
 
-    var key = Encoding.UTF8.GetBytes(jwtKey);
-    var jwtIssuer    = jwtSection["Issuer"]   ?? "TicketSystemAPI";
-    var jwtAudience  = jwtSection["Audience"] ?? "TicketSystemFrontend";
+    var key         = Encoding.UTF8.GetBytes(jwtKey);
+    var jwtIssuer   = jwtSection["Issuer"]   ?? "TicketSystemAPI";
+    var jwtAudience = jwtSection["Audience"] ?? "TicketSystemFrontend";
 
     builder.Services.AddAuthentication(options =>
     {
@@ -137,11 +141,10 @@ try
             OnMessageReceived = context =>
             {
                 var accessToken = context.Request.Query["access_token"];
-                var path = context.HttpContext.Request.Path;
+                var path        = context.HttpContext.Request.Path;
                 if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
-                {
                     context.Token = accessToken;
-                }
+
                 return Task.CompletedTask;
             }
         };
@@ -152,10 +155,10 @@ try
     {
         options.AddFixedWindowLimiter("AuthPolicy", limiter =>
         {
-            limiter.PermitLimit = 10;
-            limiter.Window = TimeSpan.FromMinutes(1);
-            limiter.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            limiter.QueueLimit = 0;
+            limiter.PermitLimit            = 10;
+            limiter.Window                 = TimeSpan.FromMinutes(1);
+            limiter.QueueProcessingOrder   = QueueProcessingOrder.OldestFirst;
+            limiter.QueueLimit             = 0;
         });
         options.RejectionStatusCode = 429;
     });
@@ -177,12 +180,12 @@ try
 
         options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
         {
-            Name        = "Authorization",
-            Type        = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-            Scheme      = "bearer",
+            Name         = "Authorization",
+            Type         = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+            Scheme       = "bearer",
             BearerFormat = "JWT",
-            In          = Microsoft.OpenApi.Models.ParameterLocation.Header,
-            Description = "Ingrese SOLO el token JWT"
+            In           = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            Description  = "Ingrese SOLO el token JWT"
         });
 
         options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
