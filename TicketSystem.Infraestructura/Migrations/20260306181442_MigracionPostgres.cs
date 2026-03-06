@@ -12,6 +12,14 @@ namespace TicketSystem.Infraestructura.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
 {
     migrationBuilder.Sql(@"
+        ALTER TABLE ""Tickets"" DROP CONSTRAINT IF EXISTS ""FK_Tickets_Usuarios_UsuarioId"";
+        ALTER TABLE ""Tickets"" DROP CONSTRAINT IF EXISTS ""FK_Tickets_Usuarios_OperadorAsignadoId"";
+        ALTER TABLE ""ComentariosTicket"" DROP CONSTRAINT IF EXISTS ""FK_ComentariosTicket_Usuarios_AutorId"";
+        ALTER TABLE ""ComentariosTicket"" DROP CONSTRAINT IF EXISTS ""FK_ComentariosTicket_Tickets_TicketId"";
+        ALTER TABLE ""AuditLogs"" DROP CONSTRAINT IF EXISTS ""FK_AuditLogs_Usuarios_UsuarioId"";
+        ALTER TABLE ""AuditLogs"" DROP CONSTRAINT IF EXISTS ""FK_AuditLogs_Tickets_TicketId"";
+        ALTER TABLE ""ArchivosAdjuntos"" DROP CONSTRAINT IF EXISTS ""FK_ArchivosAdjuntos_ComentariosTicket_ComentarioId"";
+
         ALTER TABLE ""Usuarios""
             ALTER COLUMN ""Id"" TYPE uuid USING ""Id""::uuid,
             ALTER COLUMN ""Rol"" TYPE integer USING ""Rol""::integer,
@@ -47,6 +55,20 @@ namespace TicketSystem.Infraestructura.Migrations
             ALTER COLUMN ""ComentarioId"" TYPE uuid USING ""ComentarioId""::uuid,
             ALTER COLUMN ""FechaSubida"" TYPE timestamp with time zone USING ""FechaSubida""::timestamp with time zone,
             ALTER COLUMN ""TamañoBytes"" TYPE bigint USING ""TamañoBytes""::bigint;
+
+        ALTER TABLE ""Tickets""
+            ADD CONSTRAINT ""FK_Tickets_Usuarios_UsuarioId"" FOREIGN KEY (""UsuarioId"") REFERENCES ""Usuarios""(""Id"") ON DELETE CASCADE,
+            ADD CONSTRAINT ""FK_Tickets_Usuarios_OperadorAsignadoId"" FOREIGN KEY (""OperadorAsignadoId"") REFERENCES ""Usuarios""(""Id"");
+
+        ALTER TABLE ""ComentariosTicket""
+            ADD CONSTRAINT ""FK_ComentariosTicket_Usuarios_AutorId"" FOREIGN KEY (""AutorId"") REFERENCES ""Usuarios""(""Id"") ON DELETE CASCADE,
+            ADD CONSTRAINT ""FK_ComentariosTicket_Tickets_TicketId"" FOREIGN KEY (""TicketId"") REFERENCES ""Tickets""(""Id"") ON DELETE CASCADE;
+
+        ALTER TABLE ""AuditLogs""
+            ADD CONSTRAINT ""FK_AuditLogs_Usuarios_UsuarioId"" FOREIGN KEY (""UsuarioId"") REFERENCES ""Usuarios""(""Id"");
+
+        ALTER TABLE ""ArchivosAdjuntos""
+            ADD CONSTRAINT ""FK_ArchivosAdjuntos_ComentariosTicket_ComentarioId"" FOREIGN KEY (""ComentarioId"") REFERENCES ""ComentariosTicket""(""Id"") ON DELETE CASCADE;
     ");
 }
     }
