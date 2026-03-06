@@ -10,7 +10,7 @@ namespace TicketSystem.Infraestructura.Datos
         {
             var optionsBuilder = new DbContextOptionsBuilder<TicketSystemDbContext>();
             
-            optionsBuilder.UseSqlite("Data Source=ticketsystem.db");
+            optionsBuilder.UseNpgsql("Host=localhost;Database=ticketsystem;Username=postgres;Password=postgres");
 
             return new TicketSystemDbContext(optionsBuilder.Options);
         }

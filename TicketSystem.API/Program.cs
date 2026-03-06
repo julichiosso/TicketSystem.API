@@ -20,6 +20,7 @@ using TicketSystem.Infraestructura.Datos;
 using TicketSystem.Infraestructura.Repositorios;
 using TicketSystem.Infraestructura.Seed;
 using TicketSystem.Infraestructura.Servicios;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 // ─── SERILOG ──────────────────────────────────────────────────────────────────
 Log.Logger = new LoggerConfiguration()
@@ -82,10 +83,9 @@ try
     builder.Services.AddFluentValidationClientsideAdapters();
     builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-    // ─── DATABASE ─────────────────────────────────────────────────────────────────
-    builder.Services.AddDbContext<TicketSystemDbContext>(options =>
-        options.UseSqlite(
-            builder.Configuration.GetConnectionString("DefaultConnection")));
+   builder.Services.AddDbContext<TicketSystemDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
     // ─── REPOSITORIES ────────────────────────────────────────────────────────────
     builder.Services.AddScoped<IRepositorioTickets, RepositorioTickets>();
