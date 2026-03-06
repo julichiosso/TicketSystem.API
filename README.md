@@ -61,4 +61,16 @@ Layers used in the backend:
 ---
 
 ## Project Structure
+TicketSystem
+│
+├── backend
+│ ├── Domain
+│ ├── Application
+│ ├── Infrastructure
+│ └── API
+│
+└── frontend
+├── components
+├── pages
+└── services
 
