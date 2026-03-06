@@ -26,8 +26,8 @@ jobs:
       - name: Instalar dependencias
         working-directory: TicketSystem.Frontend
         run: |
-          rm -f package-lock.json
-          npm install
+          rm -rf node_modules package-lock.json
+          npm install --legacy-peer-deps
 
       - name: Build frontend
         working-directory: TicketSystem.Frontend
