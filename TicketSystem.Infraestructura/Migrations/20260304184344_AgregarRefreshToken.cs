@@ -11,16 +11,10 @@ namespace TicketSystem.Infraestructura.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "RefreshToken",
-                table: "Usuarios",
-                type: "TEXT",
-                nullable: true);
-
             migrationBuilder.AddColumn<DateTime>(
                 name: "RefreshTokenExpires",
                 table: "Usuarios",
-                type: "TEXT",
+                type: "timestamp with time zone",
                 nullable: true);
         }
 
