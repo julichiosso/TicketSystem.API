@@ -23,17 +23,21 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Instalar Vercel CLI
-        run: npm install -g vercel@latest
-
-      - name: Instalar dependencias del frontend
+      - name: Instalar dependencias
         working-directory: TicketSystem.Frontend
         run: npm install --legacy-peer-deps
 
-      - name: Build y Deploy a Vercel
+      - name: Build frontend
         working-directory: TicketSystem.Frontend
-        run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        run: npm run build
         env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      - name: Deploy a Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: TicketSystem.Frontend
+          vercel-args: '--prod'
