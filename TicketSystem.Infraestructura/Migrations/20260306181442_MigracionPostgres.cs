@@ -19,14 +19,9 @@ namespace TicketSystem.Infraestructura.Migrations
                 oldClrType: typeof(int),
                 oldType: "INTEGER");
 
-            migrationBuilder.AlterColumn<DateTime>(
-                name: "RefreshTokenExpires",
-                table: "Usuarios",
-                type: "timestamp with time zone",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "TEXT",
-                oldNullable: true);
+            migrationBuilder.Sql(
+                "ALTER TABLE \"Usuarios\" ALTER COLUMN \"RefreshTokenExpires\" TYPE timestamp with time zone USING \"RefreshTokenExpires\"::timestamp with time zone;"
+            );
 
             migrationBuilder.AlterColumn<string>(
                 name: "RefreshToken",
@@ -37,14 +32,9 @@ namespace TicketSystem.Infraestructura.Migrations
                 oldType: "TEXT",
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<DateTime>(
-                name: "PasswordResetTokenExpires",
-                table: "Usuarios",
-                type: "timestamp with time zone",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "TEXT",
-                oldNullable: true);
+            migrationBuilder.Sql(
+                "ALTER TABLE \"Usuarios\" ALTER COLUMN \"PasswordResetTokenExpires\" TYPE timestamp with time zone USING \"PasswordResetTokenExpires\"::timestamp with time zone;"
+            );
 
             migrationBuilder.AlterColumn<string>(
                 name: "PasswordResetToken",
