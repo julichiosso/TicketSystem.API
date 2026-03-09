@@ -117,6 +117,34 @@ public class AuthController : ControllerBase
         usuario.PasswordHash = _passwordHasher.HashPassword(usuario, request.Password);
         await _repositorioUsuarios.AgregarAsync(usuario);
 
+        try
+        {
+            var frontendBase = _configuration["AppSettings:FrontendBaseUrl"] ?? "http://localhost:5173";
+            var body = $@"
+                <div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;'>
+                    <div style='background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;'>
+                        <h1 style='margin: 0; font-size: 24px;'>TicketSystem</h1>
+                    </div>
+                    <div style='padding: 20px; background-color: #ffffff;'>
+                        <h2 style='color: #333;'>¡Bienvenido, {usuario.Nombre}!</h2>
+                        <p style='color: #555;'>Tu cuenta fue creada exitosamente.</p>
+                        <p style='color: #555;'>Ya podés iniciar sesión y crear tickets de soporte.</p>
+                        <div style='text-align: center; margin: 30px 0;'>
+                            <a href='{frontendBase}' style='background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;'>
+                                Ir al sistema
+                            </a>
+                        </div>
+                        <p style='color: #777; font-size: 12px;'>Si no creaste esta cuenta, ignorá este mensaje.</p>
+                    </div>
+                </div>";
+
+            await _servicioEmail.EnviarEmailAsync(usuario.Email, "¡Bienvenido a TicketSystem!", body);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[SMTP ERROR] {ex.Message}");
+        }
+
         return Ok(new { message = "Usuario registrado correctamente" });
     }
 
