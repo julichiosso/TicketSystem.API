@@ -100,10 +100,13 @@ const password = ref('');
 const formErrors = ref({ email: '', password: '' });
 
 onMounted(() => {
+  const params = new URLSearchParams(window.location.search);
+  const msg = params.get('mensaje');
+  if (msg) authStore.error = msg;
+
   if (route.query.expired === 'true') {
     notificationStore.error('Tu sesión ha expirado por seguridad. Por favor, iniciá sesión nuevamente.');
-    // Keep it clean
-    router.replace('/'); 
+    router.replace('/');
   }
 });
 

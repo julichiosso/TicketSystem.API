@@ -206,7 +206,7 @@
                 <option :value="2">Administrador</option>
               </select>
               <button @click="deleteUser(user.id)"
-                class="px-3 py-1 rounded bg-rose-500/20 text-rose-400 text-xs font-medium hover:bg-rose-500/30 transition-colors">
+                class="px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold hover:bg-rose-500/20 transition-colors">
                 Eliminar
               </button>
             </div>
@@ -332,6 +332,43 @@
     <TicketDetailModal v-if="ticketsStore.selectedTicket"
       :ticket="ticketsStore.selectedTicket"
       @close="ticketsStore.clearSelection()" />
+
+    <!-- Modal confirmación eliminar usuario -->
+    <Teleport to="body">
+      <div v-if="userToDelete" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="userToDelete = null" />
+        <div class="relative rounded-2xl p-6 w-full max-w-sm shadow-2xl border transition-colors"
+          :class="settingsStore.isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'">
+          <div class="flex flex-col items-center text-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-rose-500/10 flex items-center justify-center">
+              <svg class="w-6 h-6 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-black">¿Eliminar usuario?</h3>
+              <p class="text-sm mt-1" :class="settingsStore.isDark ? 'text-slate-400' : 'text-slate-500'">
+                Esta acción no se puede deshacer.
+              </p>
+              <p class="text-sm font-semibold mt-2 text-rose-400">{{ userToDelete?.nombre }}</p>
+            </div>
+            <div class="flex gap-3 w-full">
+              <button @click="userToDelete = null"
+                class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold border transition-colors"
+                :class="settingsStore.isDark ? 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-white' : 'bg-slate-100 border-slate-200 hover:bg-slate-200 text-slate-700'">
+                Cancelar
+              </button>
+              <button @click="confirmDeleteUser"
+                class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-rose-500 hover:bg-rose-600 text-white transition-colors">
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
   </div>
 </template>
 
@@ -467,7 +504,11 @@ const fetchUsers = async () => {
   isLoadingUsers.value = true;
   try {
     const res = await axios.get(`${API_URL}/usuarios`);
-    users.value = res.data?.data || res.data || [];
+    const rolMap = { 'Usuario': 0, 'Operador': 1, 'Administrador': 2 };
+    users.value = (res.data?.data || res.data || []).map(u => ({
+      ...u,
+      rol: typeof u.rol === 'string' ? (rolMap[u.rol] ?? 0) : u.rol
+    }));
     originalRoles.value = {};
     users.value.forEach(u => { originalRoles.value[u.id] = u.rol; u._dirty = false; });
   } catch { notificationStore.error('No se pudieron cargar los usuarios.'); }
@@ -521,10 +562,23 @@ const assignOperator = async (id, e) => {
   catch { notificationStore.error('Error al asignar operador'); }
 };
 const changeRole = (u) => { u._dirty = u.rol !== (originalRoles.value[u.id] ?? u.rol); };
-const deleteUser = async (id) => {
-  if (!confirm('¿Eliminar este usuario?')) return;
-  try { await axios.delete(`${API_URL}/usuarios/${id}`); users.value = users.value.filter(u => u.id !== id); notificationStore.success('Usuario eliminado.'); }
-  catch { notificationStore.error('No se pudo eliminar.'); }
+const userToDelete = ref(null);
+
+const deleteUser = (id) => {
+  userToDelete.value = users.value.find(u => u.id === id);
+};
+
+const confirmDeleteUser = async () => {
+  if (!userToDelete.value) return;
+  const id = userToDelete.value.id;
+  userToDelete.value = null;
+  try {
+    await axios.delete(`${API_URL}/usuarios/${id}`);
+    users.value = users.value.filter(u => u.id !== id);
+    notificationStore.success('Usuario eliminado.');
+  } catch {
+    notificationStore.error('No se pudo eliminar.');
+  }
 };
 const applyChanges = async () => {
   try {

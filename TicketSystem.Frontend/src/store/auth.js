@@ -21,11 +21,13 @@ axios.interceptors.response.use(
   response => response,
   async error => {
     const originalRequest = error.config;
+    const status = error.response?.status;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Usuario eliminado o no autorizado sin refresh posible
+    if (status === 401 && !originalRequest._retry) {
       const refreshToken = localStorage.getItem('refreshToken');
       if (!refreshToken) {
-        useAuthStore().logout();
+        useAuthStore().forceLogout('Tu sesión ha expirado.');
         return Promise.reject(error);
       }
 
@@ -57,10 +59,24 @@ axios.interceptors.response.use(
         return axios(originalRequest);
       } catch (err) {
         processQueue(err, null);
-        useAuthStore().logout();
+        useAuthStore().forceLogout('Tu cuenta fue dada de baja.');
         return Promise.reject(err);
       } finally {
         isRefreshing = false;
+      }
+    }
+
+    // 500 con usuario logueado — puede ser que fue eliminado
+    if (status === 500) {
+      const store = useAuthStore();
+      if (store.token) {
+        try {
+          await axios.get(`${API_URL}/auth/me`);
+        } catch (meError) {
+          if (meError.response?.status === 401) {
+            store.forceLogout('Tu cuenta fue dada de baja.');
+          }
+        }
       }
     }
 
@@ -96,6 +112,17 @@ export const useAuthStore = defineStore('auth', {
     async login(email, password) {
       this.loading = true;
       this.error = null;
+
+      forceLogout(message) {
+      this.user = null;
+      this.token = null;
+      this.error = message || 'Sesión cerrada.';
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      delete axios.defaults.headers.common['Authorization'];
+      window.location.href = '/login?mensaje=' + encodeURIComponent(message || '');
+    }
       try {
         const response = await axios.post(`${API_URL}/auth/login`, { email, password });
         this.token = response.data.token;
