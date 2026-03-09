@@ -42,8 +42,9 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     // ─── PUERTO RENDER ────────────────────────────────────────────────────────────
-    var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+    var port = Environment.GetEnvironmentVariable("PORT");
+    if (port != null)
+        builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
     builder.Host.UseSerilog();
 

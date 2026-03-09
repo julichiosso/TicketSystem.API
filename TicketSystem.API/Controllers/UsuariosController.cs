@@ -57,10 +57,16 @@ public class UsuariosController : ControllerBase
         var usuario = await _repositorioUsuarios.ObtenerPorIdAsync(id);
         if (usuario == null)
             throw new KeyNotFoundException("Usuario no encontrado");
-
+    
+        // Evitar que el admin se elimine a sí mismo
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (currentUserId == id.ToString())
+            return BadRequest(new { message = "No podés eliminarte a vos mismo." });
+    
         await _repositorioUsuarios.EliminarAsync(usuario);
         return NoContent();
     }
+
 
     [HttpPut("roles")]
     [Authorize(Roles = "Administrador")]
