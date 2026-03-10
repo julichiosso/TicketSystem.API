@@ -401,10 +401,8 @@ const recargar = async () => {
   notificationStore.success('Tickets actualizados.');
 };
 
-const openTicketDetail = async (ticket) => {
-  ticketsStore.selectTicket(ticket);
+const openTicketDetail = (ticket) => {
   selectedTicket.value = ticket;
-  await ticketsStore.fetchComments(ticket.id);
 };
 
 const handleLogout = async () => {

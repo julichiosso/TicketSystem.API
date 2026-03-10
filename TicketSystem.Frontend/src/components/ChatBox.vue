@@ -22,39 +22,55 @@
           <div class="flex-1 h-px" :class="'bg-slate-100 dark:bg-slate-800'"></div>
         </div>
         <div :class="esPropio(msg) ? 'flex justify-end' : 'flex justify-start'">
+
+          <!-- Nota interna -->
           <div v-if="msg.interno"
             class="w-full max-w-sm rounded-xl border border-amber-200 dark:border-amber-800/30 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 relative mt-2">
             <span class="absolute -top-2 right-2 bg-amber-500 dark:bg-amber-600 text-[8px] font-black text-black px-2 py-0.5 rounded-full uppercase tracking-wider">
               Nota Interna
             </span>
             <p class="text-[10px] font-semibold text-amber-700/70 dark:text-amber-400/70 mb-1">{{ msg.autor }}</p>
-            <p class="text-sm text-amber-800 dark:text-amber-200">{{ msg.texto }}</p>
-            <div v-if="msg.adjuntos?.length" class="mt-2 space-y-1">
-              <a v-for="adj in msg.adjuntos" :key="adj.id"
-                :href="resolveUrl(adj.url)" target="_blank"
-                class="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 hover:underline">
-                <PaperclipIcon class="w-3 h-3 flex-shrink-0" />
-                <span class="truncate max-w-[180px]">{{ adj.nombreOriginal }}</span>
-              </a>
+            <p v-if="textoVisible(msg)" class="text-sm text-amber-800 dark:text-amber-200">{{ msg.texto }}</p>
+            <div v-if="msg.adjuntos?.length" class="mt-2 space-y-1.5">
+              <template v-for="adj in msg.adjuntos" :key="adj.id">
+                <a v-if="esImagen(adj)" :href="resolveUrl(adj.url)" target="_blank" class="block">
+                  <img :src="resolveUrl(adj.url)" :alt="adj.nombreOriginal"
+                    class="max-w-[220px] rounded-lg border border-amber-200 dark:border-amber-800/30 object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                </a>
+                <a v-else :href="resolveUrl(adj.url)" target="_blank"
+                  class="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 hover:underline">
+                  <component :is="iconoArchivo(adj)" class="w-3.5 h-3.5 flex-shrink-0" />
+                  <span class="truncate max-w-[180px]">{{ adj.nombreOriginal }}</span>
+                </a>
+              </template>
             </div>
             <p class="text-[9px] text-amber-600/60 dark:text-amber-500/60 mt-1 font-mono">{{ formatTime(msg.timestamp) }}</p>
           </div>
+
+          <!-- Mensaje propio -->
           <div v-else-if="esPropio(msg)" class="flex flex-col items-end gap-0.5 max-w-xs">
             <div class="px-4 py-2.5 rounded-2xl rounded-tr-sm bg-blue-600 text-white">
-              <p class="text-sm leading-relaxed">{{ msg.texto }}</p>
-              <div v-if="msg.adjuntos?.length" class="mt-2 space-y-1">
-                <a v-for="adj in msg.adjuntos" :key="adj.id"
-                  :href="resolveUrl(adj.url)" target="_blank"
-                  class="flex items-center gap-2 text-xs text-blue-100 hover:text-white hover:underline">
-                  <PaperclipIcon class="w-3 h-3 flex-shrink-0" />
-                  <span class="truncate max-w-[180px]">{{ adj.nombreOriginal }}</span>
-                </a>
+              <p v-if="textoVisible(msg)" class="text-sm leading-relaxed">{{ msg.texto }}</p>
+              <div v-if="msg.adjuntos?.length" class="mt-2 space-y-1.5" :class="{ 'mt-0': !textoVisible(msg) }">
+                <template v-for="adj in msg.adjuntos" :key="adj.id">
+                  <a v-if="esImagen(adj)" :href="resolveUrl(adj.url)" target="_blank" class="block">
+                    <img :src="resolveUrl(adj.url)" :alt="adj.nombreOriginal"
+                      class="max-w-[220px] rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                  </a>
+                  <a v-else :href="resolveUrl(adj.url)" target="_blank"
+                    class="flex items-center gap-2 text-xs text-blue-100 hover:text-white hover:underline">
+                    <component :is="iconoArchivo(adj)" class="w-3.5 h-3.5 flex-shrink-0" />
+                    <span class="truncate max-w-[180px]">{{ adj.nombreOriginal }}</span>
+                  </a>
+                </template>
               </div>
             </div>
             <p class="text-[9px] font-mono px-1" :class="'text-slate-400 dark:text-slate-600'">
               {{ formatTime(msg.timestamp) }}
             </p>
           </div>
+
+          <!-- Mensaje de otro -->
           <div v-else class="flex flex-col items-start gap-0.5 max-w-xs">
             <p class="text-[10px] font-semibold px-1" :class="'text-slate-400 dark:text-slate-500'">
               {{ msg.autor }}
@@ -65,20 +81,26 @@
             </p>
             <div class="px-4 py-2.5 rounded-2xl rounded-tl-sm border"
               :class="'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white'">
-              <p class="text-sm leading-relaxed">{{ msg.texto }}</p>
-              <div v-if="msg.adjuntos?.length" class="mt-2 space-y-1">
-                <a v-for="adj in msg.adjuntos" :key="adj.id"
-                  :href="resolveUrl(adj.url)" target="_blank"
-                  class="flex items-center gap-2 text-xs text-blue-500 hover:underline">
-                  <PaperclipIcon class="w-3 h-3 flex-shrink-0" />
-                  <span class="truncate max-w-[180px]">{{ adj.nombreOriginal }}</span>
-                </a>
+              <p v-if="textoVisible(msg)" class="text-sm leading-relaxed">{{ msg.texto }}</p>
+              <div v-if="msg.adjuntos?.length" class="mt-2 space-y-1.5" :class="{ 'mt-0': !textoVisible(msg) }">
+                <template v-for="adj in msg.adjuntos" :key="adj.id">
+                  <a v-if="esImagen(adj)" :href="resolveUrl(adj.url)" target="_blank" class="block">
+                    <img :src="resolveUrl(adj.url)" :alt="adj.nombreOriginal"
+                      class="max-w-[220px] rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                  </a>
+                  <a v-else :href="resolveUrl(adj.url)" target="_blank"
+                    class="flex items-center gap-2 text-xs text-blue-500 hover:underline">
+                    <component :is="iconoArchivo(adj)" class="w-3.5 h-3.5 flex-shrink-0" />
+                    <span class="truncate max-w-[180px]">{{ adj.nombreOriginal }}</span>
+                  </a>
+                </template>
               </div>
             </div>
             <p class="text-[9px] font-mono px-1" :class="'text-slate-400 dark:text-slate-600'">
               {{ formatTime(msg.timestamp) }}
             </p>
           </div>
+
         </div>
       </div>
       <div v-if="alguienEscribe" class="flex justify-start">
@@ -173,7 +195,10 @@
 <script setup>
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import * as signalR from '@microsoft/signalr';
-import { MessageSquareIcon, SendIcon, PaperclipIcon, XIcon } from 'lucide-vue-next';
+import {
+  MessageSquareIcon, SendIcon, PaperclipIcon, XIcon,
+  FileTextIcon, FileSpreadsheetIcon, FileIcon, ImageIcon
+} from 'lucide-vue-next';
 import { useTicketsStore } from '../store/tickets';
 import { useAuthStore, API_URL } from '../store/auth';
 import { useSettingsStore } from '../store/settings';
@@ -197,6 +222,8 @@ const uploadProgress    = ref(0);
 let escribiendoTimer    = null;
 let connection          = null;
 
+const PLACEHOLDER_TEXTO = '📎 Archivo adjunto';
+
 const BACKEND_BASE = (() => {
   const v = import.meta.env.VITE_API_URL;
   if (v) return v.replace(/\/api$/, '');
@@ -208,6 +235,34 @@ const resolveUrl = (url) => {
   if (url.startsWith('http')) return url;
   return `${BACKEND_BASE}${url}`;
 };
+
+// ── Helpers de adjuntos ────────────────────────────────────────────────────
+
+/** Devuelve true si el texto del mensaje es solo el placeholder y hay adjuntos */
+const textoVisible = (msg) => {
+  if (!msg.texto || msg.texto === PLACEHOLDER_TEXTO) return false;
+  return true;
+};
+
+const EXTENSIONES_IMAGEN = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+
+const extArchivo = (adj) => {
+  const nombre = adj.nombreOriginal ?? adj.url ?? '';
+  return nombre.split('.').pop()?.toLowerCase() ?? '';
+};
+
+const esImagen = (adj) => EXTENSIONES_IMAGEN.includes(extArchivo(adj));
+
+const iconoArchivo = (adj) => {
+  const ext = extArchivo(adj);
+  if (['pdf'].includes(ext))                         return FileTextIcon;
+  if (['xls', 'xlsx', 'csv'].includes(ext))          return FileSpreadsheetIcon;
+  if (['doc', 'docx', 'txt'].includes(ext))          return FileTextIcon;
+  if (EXTENSIONES_IMAGEN.includes(ext))              return ImageIcon;
+  return FileIcon;
+};
+
+// ── Fechas ────────────────────────────────────────────────────────────────
 
 const parseDate = (timestamp) => {
   if (!timestamp) return null;
@@ -252,6 +307,8 @@ const showDateSeparator = (index) => {
          curr.toLocaleDateString('en-CA', { timeZone: tz });
 };
 
+// ── Roles ─────────────────────────────────────────────────────────────────
+
 const roleLabel = (r) => {
   if (r === null || r === undefined) return '';
   const n = typeof r === 'string' ? parseInt(r, 10) : r;
@@ -279,8 +336,10 @@ const mapComment = (c) => ({
   texto:     c.mensaje,
   interno:   c.interno,
   timestamp: c.fecha ?? null,
-  adjuntos:  c.adjuntos ?? []
+  adjuntos:  c.adjuntos ?? c.Adjuntos ?? []
 });
+
+// ── UI helpers ────────────────────────────────────────────────────────────
 
 const scrollToBottom = (smooth = false) => {
   nextTick(() => {
@@ -319,6 +378,8 @@ const removeFile = (i) => {
   pendingFiles.value = pendingFiles.value.filter((_, idx) => idx !== i);
 };
 
+// ── Upload ────────────────────────────────────────────────────────────────
+
 const uploadFiles = async (comentarioId) => {
   if (!pendingFiles.value.length) return;
   const total = pendingFiles.value.length;
@@ -333,6 +394,8 @@ const uploadFiles = async (comentarioId) => {
   pendingFiles.value   = [];
   uploadProgress.value = 0;
 };
+
+// ── SignalR ───────────────────────────────────────────────────────────────
 
 const getToken = () => localStorage.getItem('token') ?? '';
 
@@ -386,6 +449,11 @@ const cargarMensajes = async (id) => {
   if (!id) return;
   await ticketsStore.fetchComments(id);
   messages.value = ticketsStore.comments.map(mapComment);
+  console.log('MESSAGES:', JSON.stringify(messages.value.map(m => ({ 
+    autor: m.autor, 
+    texto: m.texto, 
+    adjuntos: m.adjuntos 
+  })), null, 2));
   scrollToBottom(false);
   nextTick(() => inputRef.value?.focus());
 };
@@ -399,6 +467,8 @@ watch(() => props.ticketId, async (id) => {
   }
 }, { immediate: true });
 
+// ── Envío ─────────────────────────────────────────────────────────────────
+
 const sendMessage = async () => {
   const texto   = newMessage.value.trim();
   const interno = isInternalMode.value;
@@ -409,10 +479,11 @@ const sendMessage = async () => {
 
   try {
     if (connection?.state === signalR.HubConnectionState.Connected && !pendingFiles.value.length) {
-      await connection.invoke('EnviarMensaje', props.ticketId, texto || '📎 Archivo adjunto', interno);
+      await connection.invoke('EnviarMensaje', props.ticketId, texto, interno);
     } else {
+      // Si hay archivos y no hay texto, guardamos string vacío para evitar el placeholder
       const saved = await ticketsStore.addComment(props.ticketId, {
-        mensaje: texto || '📎 Archivo adjunto',
+        mensaje: texto || '',
         interno
       });
       if (pendingFiles.value.length > 0 && saved?.id) {

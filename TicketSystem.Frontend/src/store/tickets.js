@@ -14,14 +14,19 @@ function safeArray(value) {
 function normalizeComment(comment) {
   if (!comment) return null;
   return {
-    id: comment.id ?? comment.Id,
+    id:       comment.id       ?? comment.Id,
     ticketId: comment.ticketId ?? comment.TicketId,
-    autorId: comment.autorId ?? comment.AutorId,
-    autor: comment.autor ?? comment.Autor ?? 'Sistema',
-    autorRol: comment.autorRol ?? comment.rol ?? comment.Rol ?? null,
-    mensaje: comment.mensaje ?? comment.Mensaje ?? '',
-    interno: comment.interno ?? comment.Interno ?? false,
-    fecha: comment.fecha ?? comment.Fecha ?? new Date().toISOString()
+    autorId:  comment.autorId  ?? comment.AutorId,
+    autor:    comment.autor    ?? comment.Autor ?? 'Sistema',
+    autorRol: comment.autorRol ?? comment.rol   ?? comment.Rol ?? null,
+    mensaje:  comment.mensaje  ?? comment.Mensaje ?? '',
+    interno:  comment.interno  ?? comment.Interno ?? false,
+    fecha:    comment.fecha    ?? comment.Fecha ?? new Date().toISOString(),
+    adjuntos: safeArray(comment.adjuntos ?? comment.Adjuntos ?? []).map(a => ({
+      id:             a.id             ?? a.Id,
+      url:            a.url            ?? a.Url            ?? a.ruta ?? a.Ruta ?? '',
+      nombreOriginal: a.nombreOriginal ?? a.NombreOriginal ?? a.nombre ?? a.Nombre ?? '',
+    }))
   };
 }
 export const useTicketsStore = defineStore('tickets', {
@@ -201,7 +206,9 @@ export const useTicketsStore = defineStore('tickets', {
       try {
         const response = await axios.get(`${API_URL}/tickets/${ticketId}/comments`);
         const raw = response.data?.data ?? response.data ?? [];
+        console.log('[fetchComments] RAW[0]:', JSON.stringify(raw[0], null, 2));
         this.comments = safeArray(raw).map(normalizeComment).filter(Boolean);
+        console.log('[fetchComments] NORMALIZED[0]:', JSON.stringify(this.comments[0], null, 2));
         if (this.selectedTicket?.id === ticketId)
           this.selectedTicket = { ...this.selectedTicket, _comments: this.comments };
         return this.comments;
