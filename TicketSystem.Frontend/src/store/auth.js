@@ -1,11 +1,10 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
 
-export const API_URL = import.meta.env.VITE_API_BASE_URL 
+export const API_URL = import.meta.env.VITE_API_BASE_URL
   ? `${import.meta.env.VITE_API_BASE_URL}/api`
   : 'http://localhost:5134/api';
-  
-// Interceptor global para renovar token automáticamente
+
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -23,7 +22,6 @@ axios.interceptors.response.use(
     const originalRequest = error.config;
     const status = error.response?.status;
 
-    // Usuario eliminado o no autorizado sin refresh posible
     if (status === 401 && !originalRequest._retry) {
       const refreshToken = localStorage.getItem('refreshToken');
       if (!refreshToken) {
@@ -66,7 +64,6 @@ axios.interceptors.response.use(
       }
     }
 
-    // 500 con usuario logueado — puede ser que fue eliminado
     if (status === 500) {
       const store = useAuthStore();
       if (store.token) {
@@ -101,19 +98,15 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAuthenticated: (state) => !!state.token,
     isAdmin: (state) => state.user?.rol === 'Administrador' || state.user?.rol === 2,
-    isOperador: (state) => 
-      state.user?.rol === 'Operador' || 
-      state.user?.rol === 1 || 
-      state.user?.rol === 'Administrador' || 
+    isOperador: (state) =>
+      state.user?.rol === 'Operador' ||
+      state.user?.rol === 1 ||
+      state.user?.rol === 'Administrador' ||
       state.user?.rol === 2
   },
 
   actions: {
-    async login(email, password) {
-      this.loading = true;
-      this.error = null;
-
-      forceLogout(message) {
+    forceLogout(message) {
       this.user = null;
       this.token = null;
       this.error = message || 'Sesión cerrada.';
@@ -122,7 +115,11 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('user');
       delete axios.defaults.headers.common['Authorization'];
       window.location.href = '/login?mensaje=' + encodeURIComponent(message || '');
-    }
+    },
+
+    async login(email, password) {
+      this.loading = true;
+      this.error = null;
       try {
         const response = await axios.post(`${API_URL}/auth/login`, { email, password });
         this.token = response.data.token;
@@ -191,7 +188,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         await axios.post(`${API_URL}/auth/logout`);
       } catch {
-        // ignorar error si el token ya expiró
+        
       } finally {
         this.user = null;
         this.token = null;
