@@ -1,64 +1,62 @@
 <template>
   <div class="flex flex-col w-full h-full"
-    :class="settingsStore.isDark ? 'bg-slate-900' : 'bg-white'">
-
-    <!-- Messages area -->
+    :class="'bg-white dark:bg-slate-900'">
     <div ref="messagesContainer"
       class="flex-1 overflow-y-auto space-y-2 mb-3 custom-scrollbar px-1">
-
       <div v-if="messages.length === 0"
         class="flex flex-col items-center justify-center h-48 space-y-3">
         <MessageSquareIcon class="w-8 h-8 opacity-20"
-          :class="settingsStore.isDark ? 'text-slate-500' : 'text-slate-400'" />
+          :class="'text-slate-400 dark:text-slate-500'" />
         <p class="text-xs font-bold uppercase tracking-widest"
-          :class="settingsStore.isDark ? 'text-slate-600' : 'text-slate-400'">
+          :class="'text-slate-400 dark:text-slate-600'">
           Sin actividad aún
         </p>
       </div>
-
       <div v-for="(msg, index) in messages" :key="msg.id">
-
-        <!-- Separador de fecha -->
-        <div v-if="showDateSeparator(index)"
-          class="flex items-center gap-3 my-3">
-          <div class="flex-1 h-px"
-            :class="settingsStore.isDark ? 'bg-slate-800' : 'bg-slate-100'"></div>
+        <div v-if="showDateSeparator(index)" class="flex items-center gap-3 my-3">
+          <div class="flex-1 h-px" :class="'bg-slate-100 dark:bg-slate-800'"></div>
           <span class="text-[9px] font-black uppercase tracking-widest"
-            :class="settingsStore.isDark ? 'text-slate-600' : 'text-slate-400'">
+            :class="'text-slate-400 dark:text-slate-600'">
             {{ formatDateSeparator(msg.timestamp) }}
           </span>
-          <div class="flex-1 h-px"
-            :class="settingsStore.isDark ? 'bg-slate-800' : 'bg-slate-100'"></div>
+          <div class="flex-1 h-px" :class="'bg-slate-100 dark:bg-slate-800'"></div>
         </div>
-
         <div :class="esPropio(msg) ? 'flex justify-end' : 'flex justify-start'">
-
-          <!-- Nota interna -->
           <div v-if="msg.interno"
-            class="w-full max-w-sm rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-2 relative mt-2">
-            <span class="absolute -top-2 right-2 bg-amber-500 text-[8px] font-black text-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+            class="w-full max-w-sm rounded-xl border border-amber-200 dark:border-amber-800/30 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 relative mt-2">
+            <span class="absolute -top-2 right-2 bg-amber-500 dark:bg-amber-600 text-[8px] font-black text-black px-2 py-0.5 rounded-full uppercase tracking-wider">
               Nota Interna
             </span>
-            <p class="text-[10px] font-semibold text-amber-400/70 mb-1">{{ msg.autor }}</p>
-            <p class="text-sm text-amber-200">{{ msg.texto }}</p>
-            <p class="text-[9px] text-amber-500/40 mt-1 font-mono">{{ formatTime(msg.timestamp) }}</p>
+            <p class="text-[10px] font-semibold text-amber-700/70 dark:text-amber-400/70 mb-1">{{ msg.autor }}</p>
+            <p class="text-sm text-amber-800 dark:text-amber-200">{{ msg.texto }}</p>
+            <div v-if="msg.adjuntos?.length" class="mt-2 space-y-1">
+              <a v-for="adj in msg.adjuntos" :key="adj.id"
+                :href="resolveUrl(adj.url)" target="_blank"
+                class="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 hover:underline">
+                <PaperclipIcon class="w-3 h-3 flex-shrink-0" />
+                <span class="truncate max-w-[180px]">{{ adj.nombreOriginal }}</span>
+              </a>
+            </div>
+            <p class="text-[9px] text-amber-600/60 dark:text-amber-500/60 mt-1 font-mono">{{ formatTime(msg.timestamp) }}</p>
           </div>
-
-          <!-- Mensaje propio -->
           <div v-else-if="esPropio(msg)" class="flex flex-col items-end gap-0.5 max-w-xs">
             <div class="px-4 py-2.5 rounded-2xl rounded-tr-sm bg-blue-600 text-white">
               <p class="text-sm leading-relaxed">{{ msg.texto }}</p>
+              <div v-if="msg.adjuntos?.length" class="mt-2 space-y-1">
+                <a v-for="adj in msg.adjuntos" :key="adj.id"
+                  :href="resolveUrl(adj.url)" target="_blank"
+                  class="flex items-center gap-2 text-xs text-blue-100 hover:text-white hover:underline">
+                  <PaperclipIcon class="w-3 h-3 flex-shrink-0" />
+                  <span class="truncate max-w-[180px]">{{ adj.nombreOriginal }}</span>
+                </a>
+              </div>
             </div>
-            <p class="text-[9px] font-mono px-1"
-              :class="settingsStore.isDark ? 'text-slate-600' : 'text-slate-400'">
+            <p class="text-[9px] font-mono px-1" :class="'text-slate-400 dark:text-slate-600'">
               {{ formatTime(msg.timestamp) }}
             </p>
           </div>
-
-          <!-- Mensaje ajeno -->
           <div v-else class="flex flex-col items-start gap-0.5 max-w-xs">
-            <p class="text-[10px] font-semibold px-1"
-              :class="settingsStore.isDark ? 'text-slate-500' : 'text-slate-400'">
+            <p class="text-[10px] font-semibold px-1" :class="'text-slate-400 dark:text-slate-500'">
               {{ msg.autor }}
               <span class="uppercase tracking-widest text-[8px] ml-1 px-1.5 py-0.5 rounded-full"
                 :class="roleBadgeClass(msg.autorRol)">
@@ -66,24 +64,26 @@
               </span>
             </p>
             <div class="px-4 py-2.5 rounded-2xl rounded-tl-sm border"
-              :class="settingsStore.isDark
-                ? 'bg-slate-800 border-slate-700 text-white'
-                : 'bg-slate-50 border-slate-200 text-slate-900'">
+              :class="'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white'">
               <p class="text-sm leading-relaxed">{{ msg.texto }}</p>
+              <div v-if="msg.adjuntos?.length" class="mt-2 space-y-1">
+                <a v-for="adj in msg.adjuntos" :key="adj.id"
+                  :href="resolveUrl(adj.url)" target="_blank"
+                  class="flex items-center gap-2 text-xs text-blue-500 hover:underline">
+                  <PaperclipIcon class="w-3 h-3 flex-shrink-0" />
+                  <span class="truncate max-w-[180px]">{{ adj.nombreOriginal }}</span>
+                </a>
+              </div>
             </div>
-            <p class="text-[9px] font-mono px-1"
-              :class="settingsStore.isDark ? 'text-slate-600' : 'text-slate-400'">
+            <p class="text-[9px] font-mono px-1" :class="'text-slate-400 dark:text-slate-600'">
               {{ formatTime(msg.timestamp) }}
             </p>
           </div>
-
         </div>
       </div>
-
-      <!-- Indicador escribiendo -->
       <div v-if="alguienEscribe" class="flex justify-start">
         <div class="px-4 py-3 rounded-2xl rounded-tl-sm border"
-          :class="settingsStore.isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'">
+          :class="'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'">
           <div class="flex gap-1 items-center">
             <span v-for="i in 3" :key="i"
               class="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"
@@ -91,31 +91,36 @@
           </div>
         </div>
       </div>
-
     </div>
 
-    <!-- Input area -->
     <div class="space-y-2 flex-shrink-0 border-t pt-3"
-      :class="settingsStore.isDark ? 'border-slate-800' : 'border-slate-100'">
+      :class="'border-slate-100 dark:border-slate-800'">
 
       <div v-if="authStore.isAdmin || authStore.isOperador"
         class="flex items-center gap-2 px-1">
-        <button @click="isInternalMode = !isInternalMode"
-          class="flex items-center gap-2 group">
+        <button @click="isInternalMode = !isInternalMode" class="flex items-center gap-2 group">
           <div class="w-7 h-3.5 rounded-full relative transition-all"
-            :class="isInternalMode
-              ? 'bg-amber-500'
-              : settingsStore.isDark ? 'bg-slate-700' : 'bg-slate-200'">
-            <div class="absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white transition-all shadow-sm"
+            :class="isInternalMode ? 'bg-amber-500 dark:bg-amber-600' : 'bg-slate-200 dark:bg-slate-700'">
+            <div class="absolute top-0.5 w-2.5 h-2.5 rounded-full bg-white dark:bg-slate-900 transition-all shadow-sm"
               :class="isInternalMode ? 'left-[calc(100%-0.75rem)]' : 'left-0.5'"></div>
           </div>
           <span class="text-[10px] font-black uppercase tracking-widest transition-colors"
-            :class="isInternalMode
-              ? 'text-amber-400'
-              : settingsStore.isDark ? 'text-slate-600' : 'text-slate-400'">
+            :class="isInternalMode ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-600'">
             Nota Interna
           </span>
         </button>
+      </div>
+
+      <div v-if="pendingFiles.length > 0" class="flex flex-wrap gap-2 px-1">
+        <div v-for="(f, i) in pendingFiles" :key="i"
+          class="flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg border"
+          :class="'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'">
+          <PaperclipIcon class="w-3 h-3 flex-shrink-0" />
+          <span class="max-w-[100px] truncate">{{ f.name }}</span>
+          <button @click="removeFile(i)" class="text-slate-400 hover:text-rose-400 transition-colors ml-0.5">
+            <XIcon class="w-3 h-3" />
+          </button>
+        </div>
       </div>
 
       <div class="flex gap-2 items-end">
@@ -124,24 +129,41 @@
           v-model="newMessage"
           @keydown.enter.exact.prevent="sendMessage"
           @keydown.enter.shift.exact="newMessage += '\n'"
-          @input="autoResize; notificarEscribiendo()"
+          @input="autoResize(); notificarEscribiendo()"
           rows="1"
           :placeholder="isInternalMode ? 'Nota interna...' : 'Escribe un mensaje...'"
           class="flex-1 border px-4 py-3 rounded-xl text-sm outline-none transition-all font-medium resize-none"
-          :class="settingsStore.isDark
-            ? 'bg-slate-800 border-slate-700 text-white placeholder-slate-600 focus:border-blue-500'
-            : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-blue-400'"
+          :class="'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:border-blue-400 dark:focus:border-blue-500'"
           style="max-height: 120px; overflow-y: auto;" />
-        <button @click="sendMessage" :disabled="!newMessage.trim() || sending"
+
+        <input ref="fileInputRef" type="file" multiple class="hidden"
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+          @change="onFileSelected" />
+
+        <button @click="fileInputRef?.click()"
+          class="p-3 rounded-xl border transition-all flex-shrink-0"
+          :class="pendingFiles.length > 0
+            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-400 text-blue-500'
+            : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-blue-500 hover:border-blue-400'">
+          <PaperclipIcon class="w-4 h-4" />
+        </button>
+
+        <button @click="sendMessage"
+          :disabled="(!newMessage.trim() && pendingFiles.length === 0) || sending"
           class="px-5 py-3 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
-          :class="isInternalMode ? 'bg-amber-500 hover:bg-amber-400' : 'bg-blue-600 hover:bg-blue-500'">
+          :class="isInternalMode ? 'bg-amber-500 dark:bg-amber-600 hover:bg-amber-400' : 'bg-blue-600 hover:bg-blue-500'">
           <SendIcon v-if="!sending" class="w-4 h-4" />
           <div v-else class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
         </button>
       </div>
 
-      <p class="text-[9px] px-1"
-        :class="settingsStore.isDark ? 'text-slate-700' : 'text-slate-300'">
+      <div v-if="uploadProgress > 0 && uploadProgress < 100"
+        class="h-1 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+        <div class="h-full bg-blue-500 transition-all duration-300 rounded-full"
+          :style="`width: ${uploadProgress}%`"></div>
+      </div>
+
+      <p class="text-[9px] px-1" :class="'text-slate-300 dark:text-slate-700'">
         Enter para enviar · Shift+Enter para nueva línea
       </p>
     </div>
@@ -151,13 +173,13 @@
 <script setup>
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import * as signalR from '@microsoft/signalr';
-import { MessageSquareIcon, SendIcon } from 'lucide-vue-next';
+import { MessageSquareIcon, SendIcon, PaperclipIcon, XIcon } from 'lucide-vue-next';
 import { useTicketsStore } from '../store/tickets';
-import { useAuthStore } from '../store/auth';
+import { useAuthStore, API_URL } from '../store/auth';
 import { useSettingsStore } from '../store/settings';
+import axios from 'axios';
 
 const props = defineProps({ ticketId: String });
-
 const ticketsStore  = useTicketsStore();
 const authStore     = useAuthStore();
 const settingsStore = useSettingsStore();
@@ -167,15 +189,28 @@ const newMessage        = ref('');
 const isInternalMode    = ref(false);
 const messagesContainer = ref(null);
 const inputRef          = ref(null);
+const fileInputRef      = ref(null);
 const sending           = ref(false);
 const alguienEscribe    = ref(false);
+const pendingFiles      = ref([]);
+const uploadProgress    = ref(0);
 let escribiendoTimer    = null;
 let connection          = null;
 
-// ── Formato fechas ────────────────────────────────────────────────────────
+const BACKEND_BASE = (() => {
+  const v = import.meta.env.VITE_API_URL;
+  if (v) return v.replace(/\/api$/, '');
+  return 'http://localhost:5134';
+})();
+
+const resolveUrl = (url) => {
+  if (!url) return '#';
+  if (url.startsWith('http')) return url;
+  return `${BACKEND_BASE}${url}`;
+};
+
 const parseDate = (timestamp) => {
   if (!timestamp) return null;
-  // Si no tiene Z ni offset, forzar UTC
   const str = timestamp.toString();
   const normalized = str.endsWith('Z') || str.includes('+') ? str : str + 'Z';
   const d = new Date(normalized);
@@ -199,10 +234,8 @@ const formatDateSeparator = (timestamp) => {
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
   const dateDay   = new Date(date.toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }));
-
   if (dateDay.getTime() === today.getTime())     return 'Hoy';
   if (dateDay.getTime() === yesterday.getTime()) return 'Ayer';
-
   return new Intl.DateTimeFormat('es-AR', {
     day: '2-digit', month: 'long', year: 'numeric',
     timeZone: 'America/Argentina/Buenos_Aires'
@@ -219,7 +252,6 @@ const showDateSeparator = (index) => {
          curr.toLocaleDateString('en-CA', { timeZone: tz });
 };
 
-// ── Roles ─────────────────────────────────────────────────────────────────
 const roleLabel = (r) => {
   if (r === null || r === undefined) return '';
   const n = typeof r === 'string' ? parseInt(r, 10) : r;
@@ -233,9 +265,8 @@ const roleBadgeClass = (r) => {
   return 'bg-slate-500/10 text-slate-400';
 };
 
-// ── Propio ────────────────────────────────────────────────────────────────
 const esPropio = (msg) => {
-  const userId = authStore.user?.id?.toString().toLowerCase();
+  const userId  = authStore.user?.id?.toString().toLowerCase();
   const autorId = msg.autorId?.toString().toLowerCase();
   return userId && autorId && userId === autorId;
 };
@@ -247,10 +278,10 @@ const mapComment = (c) => ({
   autorRol:  c.autorRol ?? c.rol ?? null,
   texto:     c.mensaje,
   interno:   c.interno,
-  timestamp: c.fecha ?? null
+  timestamp: c.fecha ?? null,
+  adjuntos:  c.adjuntos ?? []
 });
 
-// ── Scroll ────────────────────────────────────────────────────────────────
 const scrollToBottom = (smooth = false) => {
   nextTick(() => {
     if (!messagesContainer.value) return;
@@ -261,7 +292,6 @@ const scrollToBottom = (smooth = false) => {
   });
 };
 
-// ── Textarea ──────────────────────────────────────────────────────────────
 const autoResize = () => {
   const el = inputRef.value;
   if (!el) return;
@@ -279,22 +309,37 @@ const resetInput = () => {
   });
 };
 
-// ── SignalR ───────────────────────────────────────────────────────────────
-const getToken = () => {
-  // El token está directo en localStorage.token
-  return localStorage.getItem('token') ?? '';
+const onFileSelected = (e) => {
+  const files = Array.from(e.target.files ?? []);
+  pendingFiles.value = [...pendingFiles.value, ...files];
+  if (fileInputRef.value) fileInputRef.value.value = '';
 };
+
+const removeFile = (i) => {
+  pendingFiles.value = pendingFiles.value.filter((_, idx) => idx !== i);
+};
+
+const uploadFiles = async (comentarioId) => {
+  if (!pendingFiles.value.length) return;
+  const total = pendingFiles.value.length;
+  for (let i = 0; i < total; i++) {
+    const form = new FormData();
+    form.append('archivo', pendingFiles.value[i]);
+    await axios.post(`${API_URL}/archivos/comentario/${comentarioId}`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    uploadProgress.value = Math.round(((i + 1) / total) * 100);
+  }
+  pendingFiles.value   = [];
+  uploadProgress.value = 0;
+};
+
+const getToken = () => localStorage.getItem('token') ?? '';
 
 const conectarSignalR = async () => {
   if (!props.ticketId) return;
-
-  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5134';
-
-
   connection = new signalR.HubConnectionBuilder()
-    .withUrl(`${baseUrl}/hubs/tickets`, {
-      accessTokenFactory: () => getToken()
-    })
+    .withUrl(`${BACKEND_BASE}/hubs/tickets`, { accessTokenFactory: () => getToken() })
     .withAutomaticReconnect()
     .configureLogging(signalR.LogLevel.Warning)
     .build();
@@ -316,7 +361,6 @@ const conectarSignalR = async () => {
   try {
     await connection.start();
     await connection.invoke('UnirseATicket', props.ticketId);
-    console.log('[SignalR] Conectado al ticket', props.ticketId);
   } catch (e) {
     console.warn('[SignalR] No disponible, usando REST:', e.message);
   }
@@ -325,8 +369,7 @@ const conectarSignalR = async () => {
 const desconectarSignalR = async () => {
   if (connection) {
     try {
-      if (props.ticketId)
-        await connection.invoke('SalirDeTicket', props.ticketId);
+      if (props.ticketId) await connection.invoke('SalirDeTicket', props.ticketId);
       await connection.stop();
     } catch { }
     connection = null;
@@ -335,13 +378,10 @@ const desconectarSignalR = async () => {
 
 const notificarEscribiendo = async () => {
   if (connection?.state === signalR.HubConnectionState.Connected) {
-    try {
-      await connection.invoke('NotificarEscribiendo', props.ticketId);
-    } catch { }
+    try { await connection.invoke('NotificarEscribiendo', props.ticketId); } catch { }
   }
 };
 
-// ── Cargar mensajes ───────────────────────────────────────────────────────
 const cargarMensajes = async (id) => {
   if (!id) return;
   await ticketsStore.fetchComments(id);
@@ -350,7 +390,6 @@ const cargarMensajes = async (id) => {
   nextTick(() => inputRef.value?.focus());
 };
 
-// ── Watchers ──────────────────────────────────────────────────────────────
 watch(() => props.ticketId, async (id) => {
   await desconectarSignalR();
   messages.value = [];
@@ -360,20 +399,25 @@ watch(() => props.ticketId, async (id) => {
   }
 }, { immediate: true });
 
-// ── Enviar ────────────────────────────────────────────────────────────────
 const sendMessage = async () => {
-  if (!newMessage.value.trim() || !props.ticketId || sending.value) return;
   const texto   = newMessage.value.trim();
   const interno = isInternalMode.value;
+  if ((!texto && pendingFiles.value.length === 0) || !props.ticketId || sending.value) return;
+
   sending.value = true;
   resetInput();
 
   try {
-    if (connection?.state === signalR.HubConnectionState.Connected) {
-      await connection.invoke('EnviarMensaje', props.ticketId, texto, interno);
+    if (connection?.state === signalR.HubConnectionState.Connected && !pendingFiles.value.length) {
+      await connection.invoke('EnviarMensaje', props.ticketId, texto || '📎 Archivo adjunto', interno);
     } else {
-      // Fallback REST
-      await ticketsStore.addComment(props.ticketId, { mensaje: texto, interno });
+      const saved = await ticketsStore.addComment(props.ticketId, {
+        mensaje: texto || '📎 Archivo adjunto',
+        interno
+      });
+      if (pendingFiles.value.length > 0 && saved?.id) {
+        await uploadFiles(saved.id);
+      }
       await cargarMensajes(props.ticketId);
     }
   } catch (e) {
@@ -384,10 +428,7 @@ const sendMessage = async () => {
   }
 };
 
-onMounted(() => {
-  nextTick(() => inputRef.value?.focus());
-});
-
+onMounted(() => { nextTick(() => inputRef.value?.focus()); });
 onUnmounted(desconectarSignalR);
 </script>
 

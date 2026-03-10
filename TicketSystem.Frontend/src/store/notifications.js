@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-
 export const useNotificationStore = defineStore('notifications', {
     state: () => ({
         notifications: []
@@ -8,7 +7,6 @@ export const useNotificationStore = defineStore('notifications', {
         addNotification(message, type = 'info', duration = 3000) {
             const id = Date.now() + Math.random();
             this.notifications.push({ id, message, type, duration });
-
             if (duration > 0) {
                 setTimeout(() => {
                     this.removeNotification(id);

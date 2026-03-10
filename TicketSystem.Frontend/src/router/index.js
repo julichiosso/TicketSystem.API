@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../store/auth';
-
 const routes = [
   { path: '/', component: () => import('../views/LoginView.vue'), meta: { public: true } },
   { path: '/register', component: () => import('../views/RegisterView.vue'), meta: { public: true } },
@@ -13,36 +12,28 @@ const routes = [
   { path: '/profile', component: () => import('../views/ProfileView.vue'), meta: { requiresAuth: true } },
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ];
-
 const router = createRouter({
   history: createWebHistory(),
   routes
 });
-
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
-
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/');
     return;
   }
-
   if (to.meta.requiresAdmin && !authStore.isAdmin) {
     next(authStore.isOperador ? '/operator' : '/dashboard');
     return;
   }
-
   if (to.meta.requiresOperator && !authStore.isOperador) {
     next('/dashboard');
     return;
   }
-
   if (to.path === '/admin' && authStore.isOperador && !authStore.isAdmin) {
     next('/operator');
     return;
   }
-
   next();
 });
-
 export default router;

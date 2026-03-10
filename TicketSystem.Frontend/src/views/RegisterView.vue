@@ -1,99 +1,85 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-slate-50 relative overflow-hidden px-4">
-    <!-- Premium background atmospheric blobs -->
-    <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-    <div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-indigo-600/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+  <div class="min-h-screen flex items-center justify-center bg-[#f3f2f1] dark:bg-gradient-to-br dark:from-[#1a1a1a] dark:to-[#090909] relative px-4 transition-colors">
+    <div class="w-full max-w-[440px] bg-white dark:bg-[#242424] p-11 shadow-lg dark:shadow-[0_0_20px_rgba(0,0,0,0.5)] transition-colors">
+      <div class="mb-6 flex items-center gap-2">
+        <div class="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
+            <TicketIcon class="w-4 h-4 text-white" />
+        </div>
+        <span class="font-semibold text-[15px] text-[#1b1b1b] dark:text-[#f3f2f1]">TicketSystem</span>
+      </div>
+      
+      <h1 class="text-[24px] font-semibold text-[#1b1b1b] dark:text-white mb-1 tracking-tight">{{ t('auth.new_account') }}</h1>
+      <p class="text-[15px] text-[#1b1b1b] dark:text-[#f3f2f1] mb-6">{{ t('auth.join') }}</p>
+      
+      <form @submit.prevent="handleRegister" class="space-y-4">
+        <div>
+           <input 
+              v-model="nombre" 
+              type="text" 
+              @input="formErrors.nombre = ''"
+              class="w-full bg-transparent border-b border-[#8a8886] dark:border-[#8a8886] hover:border-[#1b1b1b] dark:hover:border-white text-[#1b1b1b] dark:text-white px-1 py-1.5 focus:border-[#0067b8] dark:focus:border-[#0067b8] focus:border-b-2 focus:ring-0 outline-none transition-all placeholder:text-[#605e5c] dark:placeholder:text-[#a19f9d]"
+              :placeholder="t('auth.fullname')"
+            />
+            <p v-if="formErrors.nombre" class="text-[#e81123] text-[13px] mt-1">{{ formErrors.nombre }}</p>
+        </div>
 
-    <div class="max-w-md w-full relative z-10">
-      <div class="bg-white/90 backdrop-blur-xl border border-slate-200/60 p-8 rounded-[2rem] shadow-sm relative overflow-hidden group">
+        <div class="pt-1">
+           <input 
+              v-model="email" 
+              type="email" 
+              @input="formErrors.email = ''"
+              class="w-full bg-transparent border-b border-[#8a8886] dark:border-[#8a8886] hover:border-[#1b1b1b] dark:hover:border-white text-[#1b1b1b] dark:text-white px-1 py-1.5 focus:border-[#0067b8] dark:focus:border-[#0067b8] focus:border-b-2 focus:ring-0 outline-none transition-all placeholder:text-[#605e5c] dark:placeholder:text-[#a19f9d]"
+              :placeholder="t('auth.email_phone')"
+            />
+            <p v-if="formErrors.email" class="text-[#e81123] text-[13px] mt-1">{{ formErrors.email }}</p>
+        </div>
         
-        <!-- Inner card decorative blobs -->
-        <div class="absolute -top-32 -left-32 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl group-hover:bg-blue-400/20 transition-all duration-700 mix-blend-multiply"></div>
-        <div class="absolute -bottom-32 -right-32 w-80 h-80 bg-indigo-400/10 rounded-full blur-3xl group-hover:bg-indigo-400/20 transition-all duration-700 mix-blend-multiply"></div>
+        <div class="pt-1">
+           <input 
+              v-model="password" 
+              type="password" 
+              @input="formErrors.password = ''"
+              class="w-full bg-transparent border-b border-[#8a8886] dark:border-[#8a8886] hover:border-[#1b1b1b] dark:hover:border-white text-[#1b1b1b] dark:text-white px-1 py-1.5 focus:border-[#0067b8] dark:focus:border-[#0067b8] focus:border-b-2 focus:ring-0 outline-none transition-all placeholder:text-[#605e5c] dark:placeholder:text-[#a19f9d]"
+              :placeholder="t('auth.password')"
+            />
+            <p v-if="formErrors.password" class="text-[#e81123] text-[13px] mt-1">{{ formErrors.password }}</p>
+        </div>
 
-        <div class="relative z-10">
-          <div class="flex flex-col items-center mb-10">
-            <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm shadow-blue-600/20">
-              <TicketIcon class="text-white w-8 h-8" />
+        <div class="pt-2">
+            <div class="flex items-center gap-1.5">
+            <span class="text-[13px] text-[#1b1b1b] dark:text-[#f3f2f1]">{{ t('auth.already_have') }}</span>
+            <router-link to="/" class="text-[13px] text-[#0067b8] dark:text-[#4da1ff] hover:text-[#005da6] dark:hover:text-[#6cb1ff] hover:underline focus:outline-none">
+                {{ t('auth.back_to_login') }}
+            </router-link>
             </div>
-            <h1 class="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">Crear Cuenta</h1>
-            <p class="text-slate-500 text-sm font-medium">Unite a la plataforma de soporte premium</p>
-          </div>
+        </div>
 
-          <form @submit.prevent="handleRegister" class="space-y-6">
-            <div>
-              <label class="block text-slate-400 text-xs font-bold mb-2 uppercase tracking-wide">Nombre Completo</label>
-              <input 
-                v-model="nombre" 
-                type="text" 
-                @input="formErrors.nombre = ''"
-                class="w-full bg-slate-50/50 border border-slate-200/80 text-slate-900 px-4 py-3.5 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-400 font-medium"
-                placeholder="John Doe"
-              />
-              <p v-if="formErrors.nombre" class="text-rose-500 text-xs font-medium mt-1.5 flex items-center gap-1">
-                <AlertCircleIcon class="w-3.5 h-3.5" /> {{ formErrors.nombre }}
-              </p>
-            </div>
-
-            <div>
-              <label class="block text-slate-400 text-xs font-bold mb-2 uppercase tracking-wide">Correo Electrónico</label>
-              <input 
-                v-model="email" 
-                type="email" 
-                @input="formErrors.email = ''"
-                class="w-full bg-slate-50/50 border border-slate-200/80 text-slate-900 px-4 py-3.5 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-400 font-medium"
-                placeholder="name@company.com"
-              />
-              <p v-if="formErrors.email" class="text-rose-500 text-xs font-medium mt-1.5 flex items-center gap-1">
-                <AlertCircleIcon class="w-3.5 h-3.5" /> {{ formErrors.email }}
-              </p>
-            </div>
-
-            <div>
-              <label class="block text-slate-400 text-xs font-bold mb-2 uppercase tracking-wide">Contraseña</label>
-              <input 
-                v-model="password" 
-                type="password" 
-                @input="formErrors.password = ''"
-                class="w-full bg-slate-50/50 border border-slate-200/80 text-slate-900 px-4 py-3.5 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-400 font-medium"
-                placeholder="••••••••"
-              />
-              <p v-if="formErrors.password" class="text-rose-500 text-xs font-medium mt-1.5 flex items-center gap-1">
-                <AlertCircleIcon class="w-3.5 h-3.5" /> {{ formErrors.password }}
-              </p>
-            </div>
-
-            <button 
-              type="submit" 
-              :disabled="authStore.loading"
-              class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3.5 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center"
-            >
-              <span v-if="!authStore.loading">Registrarse Ahora</span>
-              <Loader2Icon v-else class="w-5 h-5 animate-spin" />
-            </button>
-            <ErrorMessage :message="authStore.error" />
-          </form>
-
-          <div class="mt-8 pt-8 border-t border-slate-200 text-center">
-            <p class="text-slate-500 font-medium text-sm">
-              ¿Ya tenés una cuenta? 
-              <router-link to="/" class="text-blue-500 font-semibold hover:text-blue-600 transition-colors ml-1">Iniciar Sesión</router-link>
-            </p>
-          </div>
- </div>
- </div>
- </div>
- </div>
+        <div class="flex justify-end pt-4">
+          <button 
+            type="submit" 
+            :disabled="authStore.loading"
+            class="bg-[#0067b8] hover:bg-[#005da6] text-white px-8 py-1.5 min-w-[108px] font-semibold text-[15px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          >
+            <span v-if="!authStore.loading">{{ t('auth.next') }}</span>
+            <Loader2Icon v-else class="w-5 h-5 animate-spin" />
+          </button>
+        </div>
+        
+        <ErrorMessage :message="authStore.error" />
+      </form>
+    </div>
+  </div>
 </template>
-
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../store/auth';
 import { useNotificationStore } from '../store/notifications';
-import { TicketIcon, Loader2Icon, AlertCircleIcon } from 'lucide-vue-next';
+import { TicketIcon, Loader2Icon } from 'lucide-vue-next';
 import ErrorMessage from '../components/ErrorMessage.vue';
+import { useI18n } from '../composables/useI18n';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
 const router = useRouter();
@@ -108,33 +94,33 @@ const handleRegister = async () => {
   let hasError = false;
 
   if (!nombre.value) {
-    formErrors.value.nombre = 'Tu nombre completo es requerido';
+    formErrors.value.nombre = t('auth.email_req'); 
     hasError = true;
   }
   if (!email.value) {
-    formErrors.value.email = 'El correo electrónico es requerido';
+    formErrors.value.email = t('auth.email_req');
     hasError = true;
   }
   if (!password.value) {
-    formErrors.value.password = 'La contraseña es requerida';
+    formErrors.value.password = t('auth.pass_req');
     hasError = true;
   } else if (password.value.length < 6) {
-    formErrors.value.password = 'La contraseña debe tener al menos 6 caracteres';
+    formErrors.value.password = 'Min. 6 caracteres';
     hasError = true;
   }
 
   if (hasError) return;
 
   const success = await authStore.register({
- nombre: nombre.value,
- email: email.value,
- password: password.value,
- rol: 0 // Default to Usuario
- });
- if (success) {
- notificationStore.success('¡Registro exitoso! Iniciando sesión...');
- // Log in automatically or redirect to login
- router.push('/');
- }
+    nombre: nombre.value,
+    email: email.value,
+    password: password.value,
+    rol: 0 
+  });
+
+  if (success) {
+    notificationStore.success('¡Registro exitoso! Iniciando sesión...');
+    router.push('/');
+  }
 };
 </script>

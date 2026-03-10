@@ -1,5 +1,5 @@
 <template>
- <div class="group relative bg-white border border-slate-200 shadow-sm rounded-3xl p-6 transition-all duration-500">
+ <div class="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm rounded-3xl p-6 transition-all duration-500">
  <!-- header badges placeholder -->
  <div class="flex items-center justify-between mb-4">
  <div class="flex gap-2">
@@ -8,14 +8,12 @@
  </div>
  <div class="w-16 h-4 bg-slate-700 rounded animate-pulse"></div>
  </div>
-
  <!-- title/content placeholder -->
  <h3 class="w-3/4 h-6 bg-slate-700 rounded animate-pulse mb-2"></h3>
  <p class="space-y-2">
  <span class="block w-full h-4 bg-slate-700 rounded animate-pulse"></span>
  <span class="block w-5/6 h-4 bg-slate-700 rounded animate-pulse"></span>
  </p>
-
  <!-- footer placeholder -->
  <div class="flex items-center justify-between pt-4 border-t border-slate-200/50">
  <div class="flex items-center gap-3">
@@ -29,7 +27,5 @@
  </div>
  </div>
 </template>
-
 <script setup>
-// purely presentational skeleton, no props required
 </script>

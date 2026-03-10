@@ -1,14 +1,12 @@
 import { defineStore } from 'pinia';
-
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
-    themeMode: localStorage.getItem('themeMode') || 'light', // 'light' | 'dark'
+    themeMode: localStorage.getItem('themeMode') || 'light', 
     themeColor: localStorage.getItem('themeColor') || 'blue',
     uiDensity: localStorage.getItem('uiDensity') || 'comfortable',
     language: localStorage.getItem('language') || 'es',
     notificationsEnabled: localStorage.getItem('notificationsEnabled') !== 'false'
   }),
-
   getters: {
     isDark: (state) => state.themeMode === 'dark',
     themeClasses: (state) => {
@@ -32,40 +30,33 @@ export const useSettingsStore = defineStore('settings', {
       return colors[state.themeColor] || colors.blue;
     }
   },
-
   actions: {
     setThemeMode(mode) {
       this.themeMode = mode;
       localStorage.setItem('themeMode', mode);
       this.applyTheme();
     },
-
     toggleThemeMode() {
       this.setThemeMode(this.themeMode === 'light' ? 'dark' : 'light');
     },
-
     setThemeColor(color) {
       this.themeColor = color;
       localStorage.setItem('themeColor', color);
       this.applyAccentColor();
     },
-
     setUIDensity(density) {
       this.uiDensity = density;
       localStorage.setItem('uiDensity', density);
       document.documentElement.setAttribute('data-density', density);
     },
-
     setLanguage(lang) {
       this.language = lang;
       localStorage.setItem('language', lang);
     },
-
     toggleNotifications() {
       this.notificationsEnabled = !this.notificationsEnabled;
       localStorage.setItem('notificationsEnabled', this.notificationsEnabled);
     },
-
     applyAccentColor() {
       const colors = {
         blue: '59 130 246',
@@ -77,13 +68,11 @@ export const useSettingsStore = defineStore('settings', {
       const val = colors[this.themeColor] || colors.blue;
       document.documentElement.style.setProperty('--accent-primary', val);
     },
-
     applyTheme() {
       const isDark = this.themeMode === 'dark';
       document.documentElement.classList.toggle('dark', isDark);
       document.documentElement.setAttribute('data-theme', this.themeMode);
     },
-
     initSettings() {
       this.applyTheme();
       this.applyAccentColor();

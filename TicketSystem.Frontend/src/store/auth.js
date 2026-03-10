@@ -1,11 +1,8 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
-
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5134/api';
-
 let isRefreshing = false;
 let failedQueue = [];
-
 const processQueue = (error, token = null) => {
   failedQueue.forEach(prom => {
     if (error) prom.reject(error);
@@ -13,20 +10,17 @@ const processQueue = (error, token = null) => {
   });
   failedQueue = [];
 };
-
 axios.interceptors.response.use(
   response => response,
   async error => {
     const originalRequest = error.config;
     const status = error.response?.status;
-
     if (status === 401 && !originalRequest._retry) {
       const refreshToken = localStorage.getItem('refreshToken');
       if (!refreshToken) {
         useAuthStore().forceLogout('Tu sesión ha expirado.');
         return Promise.reject(error);
       }
-
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -35,21 +29,16 @@ axios.interceptors.response.use(
           return axios(originalRequest);
         }).catch(err => Promise.reject(err));
       }
-
       originalRequest._retry = true;
       isRefreshing = true;
-
       try {
         const response = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
         const { token, refreshToken: newRefreshToken } = response.data;
-
         localStorage.setItem('token', token);
         localStorage.setItem('refreshToken', newRefreshToken);
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
         const store = useAuthStore();
         store.token = token;
-
         processQueue(null, token);
         originalRequest.headers['Authorization'] = `Bearer ${token}`;
         return axios(originalRequest);
@@ -61,7 +50,6 @@ axios.interceptors.response.use(
         isRefreshing = false;
       }
     }
-
     if (status === 500) {
       const store = useAuthStore();
       if (store.token) {
@@ -74,11 +62,9 @@ axios.interceptors.response.use(
         }
       }
     }
-
     return Promise.reject(error);
   }
 );
-
 export const useAuthStore = defineStore('auth', {
   state: () => {
     const token = localStorage.getItem('token');
@@ -92,7 +78,6 @@ export const useAuthStore = defineStore('auth', {
       error: null
     };
   },
-
   getters: {
     isAuthenticated: (state) => !!state.token,
     isAdmin: (state) => state.user?.rol === 'Administrador' || state.user?.rol === 2,
@@ -102,7 +87,6 @@ export const useAuthStore = defineStore('auth', {
       state.user?.rol === 'Administrador' ||
       state.user?.rol === 2
   },
-
   actions: {
     forceLogout(message) {
       this.user = null;
@@ -114,7 +98,6 @@ export const useAuthStore = defineStore('auth', {
       delete axios.defaults.headers.common['Authorization'];
       window.location.href = '/login?mensaje=' + encodeURIComponent(message || '');
     },
-
     async login(email, password) {
       this.loading = true;
       this.error = null;
@@ -122,7 +105,6 @@ export const useAuthStore = defineStore('auth', {
         const response = await axios.post(`${API_URL}/auth/login`, { email, password });
         this.token = response.data.token;
         this.user = response.data.usuario;
-
         localStorage.setItem('token', this.token);
         localStorage.setItem('refreshToken', response.data.refreshToken);
         localStorage.setItem('user', JSON.stringify(this.user));
@@ -139,7 +121,6 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false;
       }
     },
-
     async register(userData) {
       this.loading = true;
       this.error = null;
@@ -153,7 +134,6 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false;
       }
     },
-
     async forgotPassword(email) {
       this.loading = true;
       this.error = null;
@@ -167,7 +147,6 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false;
       }
     },
-
     async resetPassword(data) {
       this.loading = true;
       this.error = null;
@@ -181,12 +160,10 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false;
       }
     },
-
     async logout() {
       try {
         await axios.post(`${API_URL}/auth/logout`);
       } catch {
-        
       } finally {
         this.user = null;
         this.token = null;

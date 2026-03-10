@@ -6,14 +6,12 @@
  </div>
  </Transition>
 </template>
-
 <script setup>
 import { AlertCircleIcon } from 'lucide-vue-next';
 defineProps({
  message: String
 });
 </script>
-
 <style scoped>
 .fade-slide-enter-active,
 .fade-slide-leave-active {
