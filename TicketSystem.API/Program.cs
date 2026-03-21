@@ -214,6 +214,7 @@ try
 
     var app = builder.Build();
 
+    app.UseCors("AllowFrontend");
     app.UseMiddleware<ExceptionMiddleware>();
     app.UseSerilogRequestLogging();
 
@@ -221,7 +222,6 @@ try
     app.UseSwaggerUI();
 
     app.UseStaticFiles();
-    app.UseCors("AllowFrontend");
     app.UseRateLimiter();
     app.UseAuthentication();
     app.UseAuthorization();
