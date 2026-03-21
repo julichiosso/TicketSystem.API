@@ -421,7 +421,7 @@ const metrics = computed(() => [
   { label: 'Pending',     value: realMetrics.value.pendingTickets },
   { label: 'In Progress', value: realMetrics.value.inProgressTickets },
   { label: 'Resolved',    value: realMetrics.value.resolvedTickets },
-  { label: 'SLA',         value: realMetrics.value.slaComplianceRate + '%' },
+  { label: 'SLA',         value: realMetrics.value.slaComplianceRate + '%'},
 ]);
 
 const kpis = computed(() => [

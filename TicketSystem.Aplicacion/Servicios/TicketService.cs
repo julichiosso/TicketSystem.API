@@ -259,8 +259,8 @@ namespace TicketSystem.Aplicacion.Servicios
                 t.ResolvedAt.HasValue &&
                 t.ResolvedAt.Value.Date == DateTime.UtcNow.Date);
 
-            double slaCompliance = totalResolved > 0
-                ? (double)resolved.Count(t => t.SlaComplied) / totalResolved * 100
+            double slaCompliance = tickets.Count > 0
+                ? (double)resolved.Count(t => t.SlaComplied) / tickets.Count * 100
                 : 100;
 
             string avgTime = "0h 0m";
