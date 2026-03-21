@@ -25,3 +25,6 @@ The ticket progresses through different states:
 
 ### 5. Audit & tracking
 All actions are logged, providing full traceability of what happened and when.
+
+<img width="1360" height="638" alt="image" src="https://github.com/user-attachments/assets/ffbbdec2-82a2-4b7c-8d3e-1d966249360e" />
+<img width="1339" height="639" alt="image" src="https://github.com/user-attachments/assets/3b06da3f-08c6-44b8-b632-3a6069f6bd98" />
