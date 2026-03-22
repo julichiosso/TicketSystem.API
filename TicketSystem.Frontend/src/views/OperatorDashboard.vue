@@ -2,7 +2,7 @@
   <div class="min-h-screen flex transition-colors duration-300"
     :class="'bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white'">
     <Sidebar />
-    <main class="flex-1 p-8 space-y-6 overflow-y-auto h-screen custom-scrollbar">
+    <main class="flex-1 p-4 md:p-8 pt-20 md:pt-8 space-y-6 overflow-y-auto h-screen custom-scrollbar">
       <header class="flex flex-col gap-6 md:flex-row md:items-center justify-between">
         <div>
           <h2 class="text-xl font-semibold tracking-tight">Support Dashboard</h2>
@@ -31,7 +31,7 @@
       </header>
 
       <section v-if="activeTab === 'tickets'" class="space-y-4">
-        <div class="grid md:grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div v-for="metric in metrics" :key="metric.label"
             class="rounded-xl p-4 border transition-all hover:scale-[1.02]"
             :class="'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm'">

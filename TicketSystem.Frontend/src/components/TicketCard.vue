@@ -1,5 +1,5 @@
 <template>
-  <div class="group relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm rounded-2xl p-6 transition-all duration-300 hover:shadow-md hover:border-blue-100 active:scale-[0.99] hover:translate-y-[-2px]">
+  <div class="group relative bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm rounded-2xl p-4 md:p-6 transition-all duration-300 hover:shadow-md hover:border-blue-100 active:scale-[0.99] hover:translate-y-[-2px]">
     
     <div class="flex items-center justify-between mb-4">
       <div class="flex gap-2">

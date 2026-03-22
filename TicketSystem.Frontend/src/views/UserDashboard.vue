@@ -2,7 +2,7 @@
   <div class="min-h-screen flex font-sans select-none transition-colors duration-300"
     :class="'bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white'">
     <Sidebar />
-    <main class="flex-1 min-w-0 h-screen overflow-y-auto page-fade-in custom-scrollbar">
+    <main class="flex-1 min-w-0 h-screen overflow-y-auto page-fade-in custom-scrollbar p-4 md:p-0">
       <header class="h-20 flex items-center justify-between px-10 sticky top-0 z-30 border-b transition-colors"
         :class="'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800'">
         <div>
@@ -58,7 +58,7 @@
         </div>
       </header>
 
-      <div class="max-w-[1600px] mx-auto p-10">
+      <div class="max-w-[1600px] mx-auto p-4 md:p-10 pt-20 md:pt-10">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div class="md:col-span-3 rounded-2xl p-6 border transition-colors"
             :class="'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 shadow-sm'">
@@ -81,7 +81,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-4 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div v-for="stat in statCards" :key="stat.label"
             class="rounded-2xl p-6 border transition-all hover:scale-[1.01]"
             :class="'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 shadow-sm'">

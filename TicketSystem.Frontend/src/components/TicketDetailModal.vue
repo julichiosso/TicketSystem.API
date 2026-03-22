@@ -2,9 +2,8 @@
   <div v-if="ticket"
     class="fixed inset-0 z-[110] flex items-center justify-center p-6 backdrop-blur-sm animate-in fade-in duration-200"
     :class="'bg-slate-900/30 dark:bg-black/60'">
-    <div class="w-full max-w-4xl relative flex flex-col rounded-2xl border transition-colors"
-      :class="'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-xl dark:bg-slate-900 dark:border-slate-800'"
-      style="max-height: 90vh; overflow: hidden;">
+    <div class="w-full max-w-4xl max-h-[95vh] md:max-h-[90vh] relative flex flex-col rounded-2xl border transition-colors overflow-hidden"
+      :class="'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-xl dark:bg-slate-900 dark:border-slate-800'">
       
       <div class="px-6 pt-5 pb-4 flex-shrink-0 border-b"
         :class="'border-slate-100 dark:border-slate-800'">
@@ -31,10 +30,9 @@
         </div>
       </div>
       
-      <div class="flex flex-1 gap-0 overflow-hidden" style="min-height: 0;">
+      <div class="flex flex-col md:flex-row flex-1 gap-0 overflow-y-auto md:overflow-hidden" style="min-height: 0;">
         
-        <div class="flex-1 flex flex-col p-5 border-r"
-          :class="'border-slate-100 dark:border-slate-800'"
+        <div class="flex-1 flex flex-col p-5 border-slate-100 dark:border-slate-800"
           style="min-height: 0;">
           <p class="text-[10px] font-black uppercase tracking-widest mb-3 flex-shrink-0"
             :class="'text-slate-400 dark:text-slate-600'">
@@ -43,8 +41,8 @@
           <ChatBox :ticketId="ticket.id" class="flex-1" style="min-height: 0;" />
         </div>
         
-        <div class="flex-shrink-0 flex flex-col gap-3 p-5 overflow-y-auto custom-scrollbar"
-          style="width: 18rem; min-height: 0;">
+        <div class="flex-shrink-0 flex flex-col gap-3 p-5 overflow-y-auto custom-scrollbar w-full md:w-[18rem] border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800"
+          style="min-height: 0;">
           
           <div class="rounded-xl border p-4 transition-colors"
             :class="'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:bg-slate-800/50 dark:border-slate-700'">
