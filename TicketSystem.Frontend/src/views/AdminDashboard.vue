@@ -548,13 +548,11 @@ const fetchMetrics = async () => {
 const fetchAuditLogs = async () => {
   try {
     const res = await axios.get(`${API_URL}/audit`);
-    console.log('AUDIT RAW:', res.data);          // ver toda la respuesta
-    console.log('PRIMER ITEM:', (res.data?.data || [])[0]);
     auditLog.value = (res.data?.data || []).map(l => ({
       id:        l.id || l.Id,
       message:   l.detail || l.Detail,
       type:      (l.action || 'update').toLowerCase(),
-      timestamp: l.createdAt || l.CreatedAt
+      timestamp: l.timestamp   // ← este era el problema
     }));
   } catch (e) { console.error(e); }
 };
@@ -643,25 +641,27 @@ const addAudit = (msg, type = 'update') => {
   if (auditLog.value.length > 50) auditLog.value.pop();
 };
 
+const onKey = (e) => {
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+  if (e.key === '1') activeTab.value = 'dashboard';
+  if (e.key === '2') activeTab.value = 'users';
+  if (e.key === '3') activeTab.value = 'metrics';
+  if (e.key === '4') activeTab.value = 'audit';
+  if (e.key === '5') activeTab.value = 'settings';
+  if (e.key === 'ArrowRight') goToPage(currentPage.value + 1);
+  if (e.key === 'ArrowLeft')  goToPage(currentPage.value - 1);
+};
+
 onMounted(async () => {
   if (!authStore.isAdmin) { router.replace('/dashboard'); return; }
   await Promise.all([fetchTickets(), fetchUsers(), fetchOperators(), fetchMetrics(), fetchAuditLogs()]);
-  const onKey = (e) => {
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
-    if (e.key === '1') activeTab.value = 'dashboard';
-    if (e.key === '2') activeTab.value = 'users';
-    if (e.key === '3') activeTab.value = 'metrics';
-    if (e.key === '4') activeTab.value = 'audit';
-    if (e.key === '5') activeTab.value = 'settings';
-    if (e.key === 'ArrowRight') goToPage(currentPage.value + 1);
-    if (e.key === 'ArrowLeft')  goToPage(currentPage.value - 1);
-  };
   window.addEventListener('keydown', onKey);
-  onUnmounted(() => {
-    window.removeEventListener('keydown', onKey);
-    if (donutChart) donutChart.destroy();
-    if (barChart)   barChart.destroy();
-  });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKey);
+  if (donutChart) donutChart.destroy();
+  if (barChart)   barChart.destroy();
 });
 
 watch(activeTab, (v) => {

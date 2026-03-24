@@ -17,13 +17,26 @@ public class TicketSystemDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // Map entity names to existing Spanish table names from migrations
+        
+        // User Entity
         modelBuilder.Entity<User>().ToTable("Usuarios");
+        // Properties match class names: Name, Email, Role, etc.
+
+        // Ticket Entity
         modelBuilder.Entity<Ticket>().ToTable("Tickets");
-        modelBuilder.Entity<TicketComment>().ToTable("ComentariosTicket");
+        // Properties match class names: Title, Description, Priority, Status, CreatedAt, etc.
+
+        // AuditLog Entity
         modelBuilder.Entity<AuditLog>().ToTable("AuditLogs");
+        // Properties match: Action, Detail, Timestamp
+
+        // TicketComment Entity
+        modelBuilder.Entity<TicketComment>().ToTable("ComentariosTicket");
+        // Properties match: Message, IsInternal, CreatedAt
+
+        // Attachment Entity
         modelBuilder.Entity<Attachment>().ToTable("ArchivosAdjuntos");
+        // Properties match: OriginalName, StoredName, ContentType, SizeBytes, UploadedAt
 
         modelBuilder.Entity<Ticket>(entity =>
         {
