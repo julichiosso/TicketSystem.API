@@ -43,70 +43,6 @@
       </header>
 
       <section v-if="activeTab === 'dashboard'" class="space-y-4">
-
-        <!-- ===================== PALOMA TONTA TICKET ===================== -->
-        <div class="relative rounded-2xl border overflow-hidden"
-          :class="'bg-white dark:bg-slate-900 border-rose-500/30 shadow-lg shadow-rose-500/10'">
-          <!-- Fondo decorativo -->
-          <div class="absolute inset-0 pointer-events-none">
-            <div class="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-rose-500/10 blur-2xl"></div>
-            <div class="absolute -bottom-4 -left-4 w-24 h-24 rounded-full bg-amber-500/10 blur-xl"></div>
-          </div>
-          <div class="relative p-5 flex flex-col md:flex-row md:items-center gap-4">
-            <!-- Badges -->
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                CRITICAL
-              </span>
-              <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                PENDING
-              </span>
-              <span class="text-[10px] font-mono text-slate-500">#TKT-0069</span>
-            </div>
-            <!-- Título principal -->
-            <div class="flex-1 min-w-0">
-              <h3 class="text-2xl md:text-4xl font-black tracking-tight leading-none"
-                :class="'text-slate-900 dark:text-white'">
-                🕊️ PALOMA TONTA
-              </h3>
-              <p class="text-sm mt-1" :class="'text-slate-500 dark:text-slate-400'">
-                No aprende. Sigue volviendo. Alta recurrencia. Sin solución a la vista.
-              </p>
-            </div>
-            <!-- Meta info -->
-            <div class="flex flex-wrap items-center gap-4 text-xs flex-shrink-0">
-              <div class="text-center">
-                <div class="font-black text-amber-400">VENCIDO 💀</div>
-                <div :class="'text-slate-500 dark:text-slate-600'">SLA</div>
-              </div>
-              <div class="text-center">
-                <div class="font-black" :class="'text-slate-900 dark:text-white'">Julian</div>
-                <div :class="'text-slate-500 dark:text-slate-600'">Asignado</div>
-              </div>
-              <div class="text-center">
-                <div class="font-black text-rose-400">Hoy, 00:00</div>
-                <div :class="'text-slate-500 dark:text-slate-600'">Creado</div>
-              </div>
-            </div>
-          </div>
-          <!-- Barra inferior de acciones -->
-          <div class="relative px-5 pb-4 flex flex-wrap gap-2">
-            <button class="px-2 py-1 rounded bg-indigo-500/20 text-indigo-400 text-xs font-medium hover:bg-indigo-500/30 transition-colors">
-              Process
-            </button>
-            <button class="px-2 py-1 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-xs font-medium hover:bg-amber-500/30 transition-colors">
-              Wait
-            </button>
-            <button class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-medium hover:bg-emerald-500/30 transition-colors">
-              Resolve
-            </button>
-            <button class="px-2 py-1 rounded bg-rose-500/20 text-rose-400 text-xs font-medium hover:bg-rose-500/30 transition-colors">
-              Delete
-            </button>
-          </div>
-        </div>
-        <!-- ================ FIN PALOMA TONTA TICKET ================ -->
-
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <div v-for="metric in metrics" :key="metric.label"
             class="rounded-xl p-4 border transition-all hover:scale-[1.02]"
@@ -616,7 +552,7 @@ const fetchAuditLogs = async () => {
       id:        l.id || l.Id,
       message:   l.detail || l.Detail,
       type:      (l.action || 'update').toLowerCase(),
-      timestamp: l.timestamp
+      timestamp: l.timestamp   // ← este era el problema
     }));
   } catch (e) { console.error(e); }
 };
@@ -678,18 +614,27 @@ const syncDatabase       = () => { notificationStore.info('Syncing...'); setTime
 
 const formatTime = (ts) => {
   if (!ts) return 'Sin fecha';
+  
   let str = ts.toString().trim();
+  
   if (!str.endsWith('Z') && !str.includes('+') && !str.match(/\d{2}:\d{2}:\d{2}\.\d+[-+]/)) {
     str = str + 'Z';
   }
+  
   const date = new Date(str);
+  
   if (isNaN(date.getTime())) return 'Fecha inválida';
+  
   return date.toLocaleString('es-AR', {
     timeZone: 'America/Argentina/Buenos_Aires',
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
   });
 };
+
 
 const addAudit = (msg, type = 'update') => {
   auditLog.value.unshift({ id: Date.now(), message: msg, type, timestamp: Date.now() });
