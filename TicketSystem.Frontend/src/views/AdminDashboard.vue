@@ -156,22 +156,22 @@
             </button>
           </div>
           <div v-for="user in filteredUsers" :key="user.id"
-            class="rounded-2xl p-4 flex items-center justify-between border mb-2 transition-colors"
+            class="rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between border mb-2 gap-4 transition-colors"
             :class="'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm'">
-            <div>
-              <div class="font-semibold">{{ user.name }}</div>
-              <div class="text-xs" :class="'text-slate-400 dark:text-slate-500'">{{ user.email }}</div>
+            <div class="flex-1 w-full overflow-hidden">
+              <div class="font-bold text-sm md:text-base truncate">{{ user.name }}</div>
+              <div class="text-[11px] md:text-sm truncate opacity-60" :class="'text-slate-400 dark:text-slate-500'">{{ user.email }}</div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 justify-between md:justify-end w-full md:w-auto">
               <select v-model="user.role" @change="changeRole(user)"
-                class="border rounded-lg px-2 py-1 text-sm outline-none transition"
-                :class="'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white'">
+                class="border rounded-xl px-2.5 py-2 text-xs md:text-sm outline-none transition-all flex-1 md:flex-initial"
+                :class="'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white'">
                 <option :value="0">User</option>
                 <option :value="1">Operator</option>
                 <option :value="2">Administrator</option>
               </select>
               <button @click="deleteUser(user.id)"
-                class="px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold hover:bg-rose-500/20 transition-colors">
+                class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-black uppercase tracking-widest hover:bg-rose-500/20 transition-all active:scale-95 whitespace-nowrap">
                 Delete
               </button>
             </div>

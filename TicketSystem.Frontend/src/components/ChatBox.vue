@@ -46,19 +46,19 @@
             <p class="text-[9px] text-amber-600/60 dark:text-amber-500/60 mt-1 font-mono">{{ formatTime(msg.timestamp) }}</p>
           </div>
 
-          <div v-else-if="isOwn(msg)" class="flex flex-col items-end gap-0.5 max-w-xs">
-            <div class="px-4 py-2.5 rounded-2xl rounded-tr-sm bg-blue-600 text-white">
+          <div v-else-if="isOwn(msg)" class="flex flex-col items-end gap-0.5 max-w-[85%] md:max-w-xs">
+            <div class="px-3 md:px-4 py-2 rounded-2xl rounded-tr-sm bg-blue-600 text-white shadow-sm">
               <p v-if="isTextVisible(msg)" class="text-sm leading-relaxed">{{ msg.message }}</p>
               <div v-if="msg.attachments?.length" class="mt-2 space-y-1.5" :class="{ 'mt-0': !isTextVisible(msg) }">
                 <template v-for="adj in msg.attachments" :key="adj.id">
                   <a v-if="isImage(adj)" :href="resolveUrl(adj.url)" target="_blank" class="block">
                     <img :src="resolveUrl(adj.url)" :alt="adj.originalName"
-                      class="max-w-[220px] rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                      class="max-w-full rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                   </a>
                   <a v-else :href="resolveUrl(adj.url)" target="_blank"
                     class="flex items-center gap-2 text-xs text-blue-100 hover:text-white hover:underline">
                     <component :is="getFileIcon(adj)" class="w-3.5 h-3.5 flex-shrink-0" />
-                    <span class="truncate max-w-[180px]">{{ adj.originalName }}</span>
+                    <span class="truncate max-w-[140px] md:max-w-[180px]">{{ adj.originalName }}</span>
                   </a>
                 </template>
               </div>
@@ -68,7 +68,7 @@
             </p>
           </div>
 
-          <div v-else class="flex flex-col items-start gap-0.5 max-w-xs">
+          <div v-else class="flex flex-col items-start gap-0.5 max-w-[85%] md:max-w-xs">
             <p class="text-[10px] font-semibold px-1" :class="'text-slate-400 dark:text-slate-500'">
               {{ msg.author }}
               <span class="uppercase tracking-widest text-[8px] ml-1 px-1.5 py-0.5 rounded-full"
@@ -76,19 +76,19 @@
                 {{ roleLabel(msg.authorRole) }}
               </span>
             </p>
-            <div class="px-4 py-2.5 rounded-2xl rounded-tl-sm border"
-              :class="'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white'">
+            <div class="px-3 md:px-4 py-2 rounded-2xl rounded-tl-sm border"
+              :class="'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white shadow-sm'">
               <p v-if="isTextVisible(msg)" class="text-sm leading-relaxed">{{ msg.message }}</p>
               <div v-if="msg.attachments?.length" class="mt-2 space-y-1.5" :class="{ 'mt-0': !isTextVisible(msg) }">
                 <template v-for="adj in msg.attachments" :key="adj.id">
                   <a v-if="isImage(adj)" :href="resolveUrl(adj.url)" target="_blank" class="block">
                     <img :src="resolveUrl(adj.url)" :alt="adj.originalName"
-                      class="max-w-[220px] rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity" />
+                      class="max-w-full rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity" />
                   </a>
                   <a v-else :href="resolveUrl(adj.url)" target="_blank"
                     class="flex items-center gap-2 text-xs text-blue-500 hover:underline">
                     <component :is="getFileIcon(adj)" class="w-3.5 h-3.5 flex-shrink-0" />
-                    <span class="truncate max-w-[180px]">{{ adj.originalName }}</span>
+                    <span class="truncate max-w-[140px] md:max-w-[180px]">{{ adj.originalName }}</span>
                   </a>
                 </template>
               </div>
